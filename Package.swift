@@ -14,6 +14,7 @@ let package = Package(
         .executable(name: "fr-bench", targets: ["fr-bench"]),
         .executable(name: "fr-pipeline", targets: ["fr-pipeline"]),
         .executable(name: "fr-probe", targets: ["fr-probe"]),
+        .executable(name: "fr-encbench", targets: ["fr-encbench"]),
     ],
     targets: [
         .target(name: "FoveatedStreamingProtocol"),
@@ -25,6 +26,7 @@ let package = Package(
         .executableTarget(name: "fr-pipeline", dependencies: ["FoveatedPipeline"]),
         .target(name: "FoveatedStreamer", dependencies: ["FoveatedPipeline", "FoveatedStreamingHost"]),
         .executableTarget(name: "fr-probe", dependencies: ["FoveatedStreamingHost"]),
+        .executableTarget(name: "fr-encbench", dependencies: ["FoveatedPipeline"]),
         .testTarget(name: "FoveatedStreamingProtocolTests", dependencies: ["FoveatedStreamingProtocol"]),
         .testTarget(name: "FoveatedStreamingHostTests", dependencies: ["FoveatedStreamingHost"]),
         .testTarget(name: "FoveationBenchmarkTests", dependencies: ["FoveationBenchmark"]),

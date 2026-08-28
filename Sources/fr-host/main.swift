@@ -20,6 +20,10 @@ struct Arguments {
     var stream = false
     var bitsPerSecond = 40_000_000
     var profileName = "aggressive"
+    var capture = false
+    var captureFPS = 90
+    var captureWidth: Int?
+    var captureHeight: Int?
 
     static let usage = """
     fr-host — Foveated Streaming session-management endpoint
@@ -40,8 +44,11 @@ struct Arguments {
       --stream            Render and stream video once a client connects.
       --media-port <n>    Port for the media channel. Default: 48011
       --bitrate <n>       Target bitrate in Mbps. Default: 40
-      --profile <name>    conservative | balanced | aggressive | extreme.
-                          Default: aggressive
+      --profile <name>    off | conservative | balanced | aggressive | extreme.
+                          Default: aggressive (off when capturing)
+      --capture           Stream this Mac's display instead of the test scene.
+      --capture-fps <n>   Upper bound on capture rate. Default: 90
+      --capture-size <WxH>  Capture at this size instead of the display's own.
       -h, --help          Show this message.
     """
 
@@ -62,6 +69,22 @@ struct Arguments {
             case "--qr-png": args.qrPath = try value()
             case "--force-repair": args.forceRepair = true
             case "--stream": args.stream = true
+            case "--capture":
+                args.capture = true
+                // Capturing a display is already a full-resolution image; the
+                // default is to send it untouched and let the operator opt in
+                // to trading periphery for headroom.
+                if args.profileName == "aggressive" { args.profileName = "off" }
+            case "--capture-fps":
+                let raw = try value()
+                guard let fps = Int(raw), fps > 0 else { throw CLIError.badValue(flag, raw) }
+                args.captureFPS = fps
+            case "--capture-size":
+                let raw = try value()
+                let parts = raw.lowercased().split(separator: "x").compactMap { Int($0) }
+                guard parts.count == 2 else { throw CLIError.badValue(flag, raw) }
+                args.captureWidth = parts[0]
+                args.captureHeight = parts[1]
             case "--profile": args.profileName = try value()
             case "--media-port":
                 let raw = try value()
@@ -188,50 +211,90 @@ host.onEvent = { event in
 // opens it after MediaStreamIsReady and it carries binary video rather than
 // the control channel's JSON.
 var mediaLink: MediaLink?
-var streamer: FoveatedStreamer?
+var sceneStreamer: FoveatedStreamer?
+var screenStreamer: ScreenStreamer?
 
 if arguments.stream {
-    let profiles = FoveationProfile.presets.filter { $0 != .off }
-    guard let profile = profiles.first(where: { $0.name == arguments.profileName }) else {
-        let expected = profiles.map(\.name).joined(separator: ", ")
+    guard let profile = FoveationProfile.presets.first(where: { $0.name == arguments.profileName }) else {
+        let expected = FoveationProfile.presets.map(\.name).joined(separator: ", ")
         FileHandle.standardError.write(Data(
             "error: unknown profile \"\(arguments.profileName)\"; expected one of \(expected)\n".utf8
         ))
         exit(2)
     }
 
-    var streamerConfiguration = StreamerConfiguration()
-    streamerConfiguration.profile = profile
-    streamerConfiguration.bitsPerSecond = arguments.bitsPerSecond
-
     let link = MediaLink(secret: credentials.secret)
     do {
-        let created = try FoveatedStreamer(configuration: streamerConfiguration, link: link)
-        created.onLog = { log($0) }
-        link.onEvent = { event in
-            switch event {
-            case .listening(let port):
-                log("media channel listening on port \(port)")
-            case .clientConnected:
-                log("media client connected — starting the render loop")
-                created.start()
-            case .clientDisconnected:
-                log("media client disconnected — pausing")
-                let statistics = created.statistics
-                log("sent \(statistics.framesSent) frames, "
-                    + String(format: "render %.1f ms, encode %.1f ms, ", statistics.meanRenderMilliseconds, statistics.meanEncodeMilliseconds)
-                    + "\(statistics.meanBytesPerFrame / 1024) KB/frame, "
-                    + "\(statistics.rateMapGenerations) rate maps")
-            case .focus(let update):
-                created.updateFocus(update)
-            case .failed(let reason):
-                log("media error: \(reason)")
+        if arguments.capture {
+            var configuration = ScreenStreamerConfiguration()
+            configuration.profile = profile
+            configuration.bitsPerSecond = arguments.bitsPerSecond
+            configuration.framesPerSecond = arguments.captureFPS
+            configuration.captureWidth = arguments.captureWidth
+            configuration.captureHeight = arguments.captureHeight
+
+            let streamer = try ScreenStreamer(configuration: configuration, link: link)
+            streamer.onLog = { log($0) }
+            screenStreamer = streamer
+
+            link.onEvent = { event in
+                switch event {
+                case .listening(let port): log("media channel listening on port \(port)")
+                case .clientConnected: log("headset connected")
+                case .clientDisconnected:
+                    let statistics = streamer.currentStatistics
+                    log("captured \(statistics.framesCaptured), sent \(statistics.framesSent), "
+                        + "dropped \(statistics.framesDropped); "
+                        + String(format: "warp %.1f ms, encode %.1f ms, ",
+                                 statistics.meanWarpMilliseconds, statistics.meanEncodeMilliseconds)
+                        + "\(statistics.meanBytesPerFrame / 1024) KB/frame")
+                case .focus(let update): streamer.updateFocus(update)
+                case .failed(let reason): log("media error: \(reason)")
+                }
             }
+            try link.start(port: arguments.mediaPort)
+
+            // Capture needs Screen Recording permission; the first run prompts,
+            // and a denial is reported rather than silently producing no frames.
+            Task {
+                do {
+                    try await streamer.start()
+                } catch {
+                    log("could not start capture: \(error)")
+                }
+            }
+            log("streaming this display: \(profile.name), up to \(arguments.captureFPS) fps, "
+                + "\(arguments.bitsPerSecond / 1_000_000) Mbps")
+        } else {
+            var configuration = StreamerConfiguration()
+            configuration.profile = profile
+            configuration.bitsPerSecond = arguments.bitsPerSecond
+
+            let streamer = try FoveatedStreamer(configuration: configuration, link: link)
+            streamer.onLog = { log($0) }
+            sceneStreamer = streamer
+
+            link.onEvent = { event in
+                switch event {
+                case .listening(let port): log("media channel listening on port \(port)")
+                case .clientConnected:
+                    log("headset connected — starting the render loop")
+                    streamer.start()
+                case .clientDisconnected:
+                    let statistics = streamer.statistics
+                    log("sent \(statistics.framesSent) frames, "
+                        + String(format: "render %.1f ms, encode %.1f ms, ",
+                                 statistics.meanRenderMilliseconds, statistics.meanEncodeMilliseconds)
+                        + "\(statistics.meanBytesPerFrame / 1024) KB/frame")
+                case .focus(let update): streamer.updateFocus(update)
+                case .failed(let reason): log("media error: \(reason)")
+                }
+            }
+            try link.start(port: arguments.mediaPort)
+            log("streaming the test scene: \(profile.name), \(arguments.bitsPerSecond / 1_000_000) Mbps")
         }
-        try link.start(port: arguments.mediaPort)
+
         mediaLink = link
-        streamer = created
-        log("streaming enabled: \(profile.name), \(arguments.bitsPerSecond / 1_000_000) Mbps")
         log("media channel secured with TLS-PSK; pair by scanning the QR code")
     } catch {
         FileHandle.standardError.write(Data("error: could not start streaming: \(error)\n".utf8))
@@ -243,7 +306,8 @@ signal(SIGINT, SIG_IGN)
 let interrupts = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
 interrupts.setEventHandler {
     log("shutting down")
-    streamer?.stop()
+    sceneStreamer?.stop()
+    if let screenStreamer { Task { await screenStreamer.stop() } }
     mediaLink?.stop()
     host.stop()
     // Give the disconnect request a moment to reach the device.

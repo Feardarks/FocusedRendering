@@ -1,25 +1,43 @@
 # Testing tonight
 
-Two programs: `fr-host` on the Mac renders and streams, the visionOS app
+Two programs: `fr-host` on the Mac captures and streams, the visionOS app
 receives and displays. They find each other over Bonjour on the same network.
+
+## 0. Grant screen recording, once
+
+Capture needs Screen Recording permission, and macOS attributes it to whichever
+app launches the tool — usually Terminal. The first run raises the prompt; if
+you miss it, add Terminal under **System Settings › Privacy & Security › Screen
+Recording** and restart Terminal.
+
+Nothing is captured until this is granted, and the host says so rather than
+silently sending black frames.
 
 ## 1. Start the Mac side
 
 ```
 cd /Users/emirhansanli/FocusedRendering
 swift build -c release
-./.build/release/fr-host --bundle-id com.emirhan.FocusedRendering.client --stream
+./.build/release/fr-host --bundle-id com.emirhan.FocusedRendering.client --stream --capture
 ```
 
-It should print the media port and that the channel is secured. Leave it running.
+It should print the capture size and that the channel is secured. Leave it
+running.
 
 Useful flags:
 
-- `--profile conservative | balanced | aggressive | extreme` — how hard to
-  foveate. Start at `aggressive`; drop to `balanced` if the periphery bothers
-  you.
-- `--bitrate 40` — Mbps.
-- `--media-port 48011` — must match the port in the app.
+- `--capture-fps 90` — upper bound. A display cannot be made to exceed its own
+  refresh, so a 60 Hz external monitor caps you at 60 whatever this says. The
+  MacBook Pro's own ProMotion panel is the one that can do 90+.
+- `--capture-size 3360x1440` — capture smaller than the display. This is the
+  main lever: encode throughput measured about 720 Mpx/s on M2 Pro, so 90 fps
+  needs the frame under roughly 8 Mpx.
+- `--profile off | conservative | balanced | aggressive | extreme` — trades
+  peripheral resolution for encoder headroom. `off` while bringing this up;
+  reach for it when the capture is too large for 90 fps.
+- `--bitrate 60` — Mbps.
+- Drop `--capture` to stream the synthetic test scene instead, which is useful
+  for separating a capture problem from a streaming one.
 
 ## 2. Check the Mac side alone first
 
