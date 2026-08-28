@@ -1,6 +1,8 @@
 import Foundation
 import FoveatedStreamingHost
 import FoveatedStreamingProtocol
+import FoveatedStreamer
+import FoveationBenchmark
 
 // Line-buffer stdout so logs appear immediately when piped to a file or tee.
 setvbuf(stdout, nil, _IOLBF, 0)
@@ -14,6 +16,10 @@ struct Arguments {
     var serviceName = "Focused Rendering"
     var forceRepair = false
     var qrPath: String?
+    var mediaPort: UInt16 = 48011
+    var stream = false
+    var bitsPerSecond = 40_000_000
+    var profileName = "aggressive"
 
     static let usage = """
     fr-host — Foveated Streaming session-management endpoint
@@ -31,6 +37,11 @@ struct Arguments {
       --name <name>       Bonjour instance name. Default: Focused Rendering
       --force-repair      Ignore remembered pairings and require a QR scan.
       --qr-png <path>     Also write the pairing QR code to this PNG file.
+      --stream            Render and stream video once a client connects.
+      --media-port <n>    Port for the media channel. Default: 48011
+      --bitrate <n>       Target bitrate in Mbps. Default: 40
+      --profile <name>    conservative | balanced | aggressive | extreme.
+                          Default: aggressive
       -h, --help          Show this message.
     """
 
@@ -50,6 +61,16 @@ struct Arguments {
             case "--name": args.serviceName = try value()
             case "--qr-png": args.qrPath = try value()
             case "--force-repair": args.forceRepair = true
+            case "--stream": args.stream = true
+            case "--profile": args.profileName = try value()
+            case "--media-port":
+                let raw = try value()
+                guard let port = UInt16(raw) else { throw CLIError.badValue(flag, raw) }
+                args.mediaPort = port
+            case "--bitrate":
+                let raw = try value()
+                guard let megabits = Int(raw), megabits > 0 else { throw CLIError.badValue(flag, raw) }
+                args.bitsPerSecond = megabits * 1_000_000
             case "--port":
                 let raw = try value()
                 guard let port = UInt16(raw) else { throw CLIError.badValue(flag, raw) }
@@ -163,10 +184,66 @@ host.onEvent = { event in
     }
 }
 
+// Media channel: separate from session management, because the headset only
+// opens it after MediaStreamIsReady and it carries binary video rather than
+// the control channel's JSON.
+var mediaLink: MediaLink?
+var streamer: FoveatedStreamer?
+
+if arguments.stream {
+    let profiles = FoveationProfile.presets.filter { $0 != .off }
+    guard let profile = profiles.first(where: { $0.name == arguments.profileName }) else {
+        let expected = profiles.map(\.name).joined(separator: ", ")
+        FileHandle.standardError.write(Data(
+            "error: unknown profile \"\(arguments.profileName)\"; expected one of \(expected)\n".utf8
+        ))
+        exit(2)
+    }
+
+    var streamerConfiguration = StreamerConfiguration()
+    streamerConfiguration.profile = profile
+    streamerConfiguration.bitsPerSecond = arguments.bitsPerSecond
+
+    let link = MediaLink()
+    do {
+        let created = try FoveatedStreamer(configuration: streamerConfiguration, link: link)
+        created.onLog = { log($0) }
+        link.onEvent = { event in
+            switch event {
+            case .listening(let port):
+                log("media channel listening on port \(port)")
+            case .clientConnected:
+                log("media client connected — starting the render loop")
+                created.start()
+            case .clientDisconnected:
+                log("media client disconnected — pausing")
+                let statistics = created.statistics
+                log("sent \(statistics.framesSent) frames, "
+                    + String(format: "render %.1f ms, encode %.1f ms, ", statistics.meanRenderMilliseconds, statistics.meanEncodeMilliseconds)
+                    + "\(statistics.meanBytesPerFrame / 1024) KB/frame, "
+                    + "\(statistics.rateMapGenerations) rate maps")
+            case .focus(let update):
+                created.updateFocus(update)
+            case .failed(let reason):
+                log("media error: \(reason)")
+            }
+        }
+        try link.start(port: arguments.mediaPort)
+        mediaLink = link
+        streamer = created
+        log("streaming enabled: \(profile.name), \(arguments.bitsPerSecond / 1_000_000) Mbps")
+    } catch {
+        FileHandle.standardError.write(Data("error: could not start streaming: \(error)\n".utf8))
+        exit(1)
+    }
+}
+
 signal(SIGINT, SIG_IGN)
 let interrupts = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
 interrupts.setEventHandler {
     log("shutting down")
+    streamer?.stop()
+    mediaLink?.stop()
     host.stop()
     // Give the disconnect request a moment to reach the device.
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { exit(0) }

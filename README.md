@@ -152,11 +152,17 @@ implemented and tested without the entitlement.
 | M1 | Rate-map renderer and GPU measurement | **complete** |
 | M2 | Inverse warp and quality measurement | **complete** |
 | M3 | Real-time HEVC through the loop, measured | **complete** |
-| M4 | Transport and on-device display, driven by head pose | next |
-| M5 | Driven by the focus region | requires the entitlement |
+| M4 | Media protocol, transport and the streaming loop | **complete** |
+| M5 | visionOS client and on-device display | next |
+| M6 | Driven by the focus region | requires the entitlement |
 
-M4 substitutes head pose for gaze, so the full pipeline can be validated before
-the entitlement exists.
+The client substitutes head pose for gaze, so the whole pipeline can be
+validated before the entitlement exists. The focus point already travels on the
+media channel; only its source changes.
+
+The host currently manages 17.4 fps at 3660×3200 because rendering and encoding
+do not overlap, and 49 ms of latency before the network. Both are addressed by
+pipelining the loop, which is the next piece of work after the client.
 
 ## Building
 
@@ -167,7 +173,8 @@ swift test
 fr-bench                                      # GPU time by profile
 fr-pipeline --out ./frames                    # quality, with PNGs to inspect
 fr-pipeline --bitrate 4                       # the same, through real-time HEVC
-fr-host --bundle-id <visionOS app bundle ID>  # the streaming endpoint
+fr-host --bundle-id <id> --stream             # the streaming endpoint
+fr-probe --sweep                              # a stand-in headset, for measuring
 ```
 
 Requires macOS 14 or later and an Apple silicon Mac. Engineering notes, protocol

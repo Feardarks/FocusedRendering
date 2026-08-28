@@ -77,6 +77,86 @@ public final class VideoCodec: @unchecked Sendable {
         if let decompression { VTDecompressionSessionInvalidate(decompression) }
     }
 
+    /// One encoded access unit, ready to put on the wire.
+    public struct EncodedAccessUnit: Sendable {
+        public let data: Data
+        public let isKeyframe: Bool
+        /// Present only when the parameter sets changed, which for a real-time
+        /// session means the first frame. A decoder cannot build a format
+        /// description without them, so they must lead the stream they describe.
+        public let parameterSets: [Data]?
+        public let encodeMilliseconds: Double
+    }
+
+    private var sentParameterSets: [Data]?
+
+    /// Encodes one frame for transmission.
+    public func encodeForTransport(_ source: CVPixelBuffer) throws -> EncodedAccessUnit {
+        let (sample, milliseconds) = try encodePipelined(source)
+
+        guard let blockBuffer = CMSampleBufferGetDataBuffer(sample) else {
+            throw CodecError.noOutput
+        }
+        var length = 0
+        var pointer: UnsafeMutablePointer<Int8>?
+        let status = CMBlockBufferGetDataPointer(
+            blockBuffer, atOffset: 0, lengthAtOffsetOut: nil,
+            totalLengthOut: &length, dataPointerOut: &pointer
+        )
+        guard status == kCMBlockBufferNoErr, let pointer else { throw CodecError.noOutput }
+        let payload = Data(bytes: pointer, count: length)
+
+        // A frame is a sync sample unless it is explicitly marked otherwise;
+        // the attachment is absent on keyframes rather than set to false.
+        var isKeyframe = true
+        if let attachments = CMSampleBufferGetSampleAttachmentsArray(sample, createIfNecessary: false),
+           CFArrayGetCount(attachments) > 0 {
+            let raw = CFArrayGetValueAtIndex(attachments, 0)
+            let dictionary = unsafeBitCast(raw, to: CFDictionary.self)
+            if let notSync = (dictionary as? [CFString: Any])?[kCMSampleAttachmentKey_NotSync] as? Bool {
+                isKeyframe = !notSync
+            }
+        }
+
+        var changedParameterSets: [Data]?
+        if let formatDescription = CMSampleBufferGetFormatDescription(sample) {
+            let sets = Self.hevcParameterSets(from: formatDescription)
+            if sets != sentParameterSets {
+                sentParameterSets = sets
+                changedParameterSets = sets
+            }
+        }
+
+        return EncodedAccessUnit(
+            data: payload,
+            isKeyframe: isKeyframe,
+            parameterSets: changedParameterSets,
+            encodeMilliseconds: milliseconds
+        )
+    }
+
+    private static func hevcParameterSets(from description: CMFormatDescription) -> [Data] {
+        var count = 0
+        guard CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(
+            description, parameterSetIndex: 0,
+            parameterSetPointerOut: nil, parameterSetSizeOut: nil,
+            parameterSetCountOut: &count, nalUnitHeaderLengthOut: nil
+        ) == noErr else { return [] }
+
+        var sets: [Data] = []
+        for index in 0..<count {
+            var pointer: UnsafePointer<UInt8>?
+            var size = 0
+            guard CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(
+                description, parameterSetIndex: index,
+                parameterSetPointerOut: &pointer, parameterSetSizeOut: &size,
+                parameterSetCountOut: nil, nalUnitHeaderLengthOut: nil
+            ) == noErr, let pointer else { continue }
+            sets.append(Data(bytes: pointer, count: size))
+        }
+        return sets
+    }
+
     /// Encodes `source`, decodes the result, and writes the decoded frame back.
     public func roundTrip(_ source: CVPixelBuffer) throws -> (image: CVPixelBuffer, measurement: CodecMeasurement) {
         let (sample, encodeMilliseconds) = try encode(source)
@@ -88,6 +168,49 @@ public final class VideoCodec: @unchecked Sendable {
             encodeMilliseconds: encodeMilliseconds,
             decodeMilliseconds: decodeMilliseconds
         ))
+    }
+
+    /// Encodes without draining the session.
+    ///
+    /// `VTCompressionSessionCompleteFrames` forces a synchronous flush, which is
+    /// what a one-frame measurement needs and exactly what a stream must avoid:
+    /// it serializes the encoder against the render loop instead of letting the
+    /// two overlap. In real-time mode with reordering disabled the encoder emits
+    /// each frame on its own, so the handler is simply awaited.
+    private func encodePipelined(_ source: CVPixelBuffer) throws -> (CMSampleBuffer, Double) {
+        let timestamp = CMTime(value: frameIndex, timescale: 90)
+        frameIndex += 1
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var produced: CMSampleBuffer?
+        var callbackStatus = noErr
+        let start = Date()
+
+        let status = VTCompressionSessionEncodeFrame(
+            compression,
+            imageBuffer: source,
+            presentationTimeStamp: timestamp,
+            duration: CMTime(value: 1, timescale: 90),
+            frameProperties: nil,
+            infoFlagsOut: nil
+        ) { encodeStatus, _, sampleBuffer in
+            callbackStatus = encodeStatus
+            produced = sampleBuffer
+            semaphore.signal()
+        }
+        guard status == noErr else { throw CodecError.encodeFailed(status) }
+
+        // Bounded, so a stalled encoder drops the frame rather than wedging the
+        // render loop for good.
+        if semaphore.wait(timeout: .now() + .milliseconds(200)) == .timedOut {
+            VTCompressionSessionCompleteFrames(compression, untilPresentationTimeStamp: .invalid)
+            semaphore.wait()
+        }
+
+        let elapsed = Date().timeIntervalSince(start) * 1000
+        guard callbackStatus == noErr else { throw CodecError.encodeFailed(callbackStatus) }
+        guard let produced else { throw CodecError.noOutput }
+        return (produced, elapsed)
     }
 
     private func encode(_ source: CVPixelBuffer) throws -> (CMSampleBuffer, Double) {

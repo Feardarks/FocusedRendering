@@ -69,6 +69,26 @@ relative to its resolution. Content with more motion would saturate a link
 sooner, which moves the realistic operating point toward the constrained regime
 where foveation wins by more.
 
+### The render loop is serial, and that is the throughput ceiling
+
+At 3660×3200 on the `aggressive` profile the host manages 17.4 fps, not 90. The
+loop renders, waits for the encoder, sends, and only then starts the next frame:
+21 ms of render plus 31 ms of encode is 52 ms, which is exactly the measured
+rate. Nothing here is mysterious — the stages simply do not overlap.
+
+Measured host-side latency is **49 ms median, 69 ms p95, over loopback** — before
+a single byte touches Wi-Fi. Gaze-driven foveation wants total motion-to-photon
+under roughly 50-70 ms, so the pipeline is already at that ceiling with no
+network in it. Overlapping render with encode is not an optimization to get to
+later; it is what makes the approach viable at all.
+
+A first guess that the per-frame `VTCompressionSessionCompleteFrames` was
+serializing the encoder turned out to be wrong: removing it changed nothing,
+because the loop waits for the encoded frame regardless. The pipelined encode
+path was kept anyway — a bounded wait and no forced flush is the right shape for
+a stream — but the throughput fix is double-buffering the render targets and
+sending from the encoder's callback.
+
 ### PSNR needs a worst case, not an average
 
 Peripheral PSNR averaged over the whole frame reads about 49 dB for every
@@ -195,7 +215,11 @@ dns-sd -L "Focused Rendering" _apple-foveated-streaming._tcp local
    part the entitlement gates.
 4. **Pairing store.** `knownFingerprint` always returns nil, so every session
    re-pairs. Persisting it removes the QR step.
-5. **Latency of the gaze loop.** The focus region reaches the Mac one round trip
+5. **Rate map churn.** A sweeping focus rebuilt the map on 45% of frames, and
+   each rebuild resends the full parameter block. The threshold trades fovea lag
+   against rebuild cost and has not been tuned against real gaze, only against a
+   synthetic circle.
+6. **Latency of the gaze loop.** The focus region reaches the Mac one round trip
    late, so the rate map always trails the eye. Post-saccade the fovea lands
    outside the high-rate region for a frame or two. Whether that is visible, and
    whether enlarging the full-quality region to cover the landing zone is enough,

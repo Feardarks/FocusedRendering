@@ -1,0 +1,253 @@
+import CoreVideo
+import Foundation
+import FoveatedPipeline
+import FoveatedStreamingHost
+import FoveatedStreamingProtocol
+import FoveationBenchmark
+import Metal
+
+public struct StreamerConfiguration: Sendable {
+    public var width = 3660
+    public var height = 3200
+    public var marchSteps = 96
+    public var profile = FoveationProfile.aggressive
+    public var bitsPerSecond = 40_000_000
+    public var framesPerSecond = 90
+    /// How far the focus point must move before the rate map is rebuilt.
+    ///
+    /// Rebuilding costs a map allocation and forces the client to reload it, so
+    /// a threshold keeps ordinary micro-movement from thrashing both. Too large
+    /// and the fovea lags the eye; this is roughly a third of the full-rate
+    /// region.
+    public var focusRebuildThreshold: Float = 0.04
+
+    public init() {}
+}
+
+public struct StreamerStatistics: Sendable {
+    public var framesSent = 0
+    public var focusUpdatesReceived = 0
+    public var rateMapGenerations = 0
+    public var meanRenderMilliseconds = 0.0
+    public var meanEncodeMilliseconds = 0.0
+    public var meanBytesPerFrame = 0
+}
+
+/// Drives the loop: take the latest focus point, build a rate map around it,
+/// render, encode, and put the frame on the wire.
+public final class FoveatedStreamer: @unchecked Sendable {
+
+    private let configuration: StreamerConfiguration
+    private let device: any MTLDevice
+    private let renderer: RoundTrip
+    private let bridge: PixelBufferBridge
+    private let link: MediaLink
+
+    private let lock = NSLock()
+    private var focus = SIMD2<Float>(0.5, 0.5)
+    private var focusUpdates = 0
+
+    private var rateMap: (any MTLRasterizationRateMap)?
+    private var rateMapFocus = SIMD2<Float>(-1, -1)
+    private var rateMapGeneration: UInt32 = 0
+
+    private var codec: VideoCodec?
+    private var codecSize = (width: 0, height: 0)
+
+    private var frameIndex: UInt64 = 0
+    private var renderTimes: [Double] = []
+    private var encodeTimes: [Double] = []
+    private var frameSizes: [Int] = []
+
+    private var running = false
+    private var thread: Thread?
+
+    public var onLog: (@Sendable (String) -> Void)?
+
+    public init(configuration: StreamerConfiguration, link: MediaLink) throws {
+        guard let device = MTLCreateSystemDefaultDevice() else { throw BenchmarkError.noDevice }
+        self.configuration = configuration
+        self.device = device
+        self.renderer = try RoundTrip(device: device)
+        self.bridge = try PixelBufferBridge(device: device)
+        self.link = link
+    }
+
+    /// Records where the headset says the person is looking.
+    ///
+    /// Called from the network queue while the render loop reads it, so the
+    /// value is guarded rather than assumed to be a torn-read-free `SIMD2`.
+    public func updateFocus(_ update: FocusUpdate) {
+        lock.lock()
+        focus = SIMD2(update.x.clamped(), update.y.clamped())
+        focusUpdates += 1
+        lock.unlock()
+    }
+
+    public func start() {
+        guard !running else { return }
+        running = true
+        let thread = Thread { [weak self] in self?.loop() }
+        thread.name = "com.focusedrendering.streamer"
+        thread.qualityOfService = .userInteractive
+        self.thread = thread
+        thread.start()
+    }
+
+    public func stop() {
+        running = false
+    }
+
+    public var statistics: StreamerStatistics {
+        lock.lock(); defer { lock.unlock() }
+        func mean(_ values: [Double]) -> Double {
+            values.isEmpty ? 0 : values.reduce(0, +) / Double(values.count)
+        }
+        return StreamerStatistics(
+            framesSent: Int(frameIndex),
+            focusUpdatesReceived: focusUpdates,
+            rateMapGenerations: Int(rateMapGeneration),
+            meanRenderMilliseconds: mean(renderTimes),
+            meanEncodeMilliseconds: mean(encodeTimes),
+            meanBytesPerFrame: frameSizes.isEmpty ? 0 : frameSizes.reduce(0, +) / frameSizes.count
+        )
+    }
+
+    private func loop() {
+        let frameDuration = 1.0 / Double(configuration.framesPerSecond)
+        var nextFrame = Date()
+
+        while running {
+            if link.isConnected {
+                do {
+                    try renderAndSend()
+                } catch {
+                    onLog?("frame dropped: \(error)")
+                }
+            }
+
+            nextFrame = nextFrame.addingTimeInterval(frameDuration)
+            let delay = nextFrame.timeIntervalSinceNow
+            if delay > 0 {
+                Thread.sleep(forTimeInterval: delay)
+            } else {
+                // Behind schedule: give up the missed frames rather than
+                // sprinting to catch up, which would only queue stale video.
+                nextFrame = Date()
+            }
+        }
+    }
+
+    private func renderAndSend() throws {
+        lock.lock()
+        let currentFocus = focus
+        lock.unlock()
+
+        let map = try rateMapIfNeeded(for: currentFocus)
+        let physical = map.physicalSize(layer: 0)
+        let codec = try codecIfNeeded(width: physical.width, height: physical.height)
+
+        let source = try bridge.makePixelBuffer(width: codec.width, height: codec.height)
+        let texture = try bridge.makeTexture(for: source)
+
+        var renderConfiguration = RoundTripConfiguration()
+        renderConfiguration.width = configuration.width
+        renderConfiguration.height = configuration.height
+        renderConfiguration.marchSteps = configuration.marchSteps
+        renderConfiguration.gaze = currentFocus
+        renderConfiguration.time = Float(frameIndex) * 0.011
+
+        // Stamped before rendering, so the figure the client computes covers
+        // render and encode as well as transport. Stamping after encode would
+        // report the network alone and flatter the pipeline.
+        let stamp = DispatchTime.now().uptimeNanoseconds
+        let renderStart = Date()
+        try renderer.renderScene(into: texture, rateMap: map, configuration: renderConfiguration)
+        let renderMilliseconds = Date().timeIntervalSince(renderStart) * 1000
+
+        let unit = try codec.encodeForTransport(source)
+
+        // Parameter sets must reach the decoder before the frame that needs
+        // them, so they go out first on the same ordered connection.
+        if let sets = unit.parameterSets, !sets.isEmpty {
+            link.send(.parameterSets(sets))
+        }
+
+        link.send(.frame(
+            FrameHeader(
+                index: frameIndex,
+                timestampNanoseconds: stamp,
+                rateMapGeneration: rateMapGeneration,
+                isKeyframe: unit.isKeyframe
+            ),
+            payload: unit.data
+        ))
+
+        lock.lock()
+        frameIndex += 1
+        renderTimes.append(renderMilliseconds)
+        encodeTimes.append(unit.encodeMilliseconds)
+        frameSizes.append(unit.data.count)
+        // Keep the windows bounded; these are running averages, not a log.
+        if renderTimes.count > 240 { renderTimes.removeFirst(120) }
+        if encodeTimes.count > 240 { encodeTimes.removeFirst(120) }
+        if frameSizes.count > 240 { frameSizes.removeFirst(120) }
+        lock.unlock()
+
+        bridge.flush()
+    }
+
+    private func rateMapIfNeeded(for focus: SIMD2<Float>) throws -> any MTLRasterizationRateMap {
+        let moved = abs(focus.x - rateMapFocus.x) + abs(focus.y - rateMapFocus.y)
+        if let existing = rateMap, moved < configuration.focusRebuildThreshold {
+            return existing
+        }
+
+        let map = try RateMapFactory.makeRateMap(
+            device: device,
+            screenWidth: configuration.width,
+            screenHeight: configuration.height,
+            profile: configuration.profile,
+            gaze: focus
+        )
+        let physical = map.physicalSize(layer: 0)
+
+        rateMap = map
+        rateMapFocus = focus
+        rateMapGeneration += 1
+
+        // The client cannot invert a map it does not have, so it travels ahead
+        // of the first frame that references it.
+        let requirements = map.parameterDataSizeAndAlign
+        var parameterData = Data(count: requirements.size)
+        if let buffer = device.makeBuffer(length: requirements.size, options: .storageModeShared) {
+            map.copyParameterData(buffer: buffer, offset: 0)
+            parameterData = Data(bytes: buffer.contents(), count: requirements.size)
+        }
+
+        link.send(.rateMap(RateMapDescription(
+            generation: rateMapGeneration,
+            screenWidth: UInt16(configuration.width),
+            screenHeight: UInt16(configuration.height),
+            physicalWidth: UInt16(physical.width),
+            physicalHeight: UInt16(physical.height),
+            parameterData: parameterData
+        )))
+
+        return map
+    }
+
+    private func codecIfNeeded(width: Int, height: Int) throws -> VideoCodec {
+        if let codec, codecSize == (width, height) { return codec }
+        // A new rate map can change the physical size, and a compression session
+        // is fixed to its dimensions.
+        let codec = try VideoCodec(width: width, height: height, bitsPerSecond: configuration.bitsPerSecond)
+        self.codec = codec
+        self.codecSize = (width, height)
+        return codec
+    }
+}
+
+private extension Float {
+    func clamped() -> Float { Swift.min(Swift.max(self, 0), 1) }
+}
