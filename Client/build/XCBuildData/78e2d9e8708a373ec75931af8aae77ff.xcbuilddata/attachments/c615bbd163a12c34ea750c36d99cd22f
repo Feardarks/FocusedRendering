@@ -1,0 +1,89 @@
+{
+  "" : {
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClient-primary.dia",
+    "emit-module-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClient-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClient-primary-emit-module.dia",
+    "pch" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClient-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClient-primary.swiftdeps"
+  },
+  "/Users/emirhansanli/FocusedRendering/Client/FocusedRenderingClient/DebugPanel.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/DebugPanel.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/DebugPanel.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/DebugPanel.dia",
+    "index-unit-output-path" : "/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/DebugPanel.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/DebugPanel.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/DebugPanel.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/DebugPanel.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/DebugPanel~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Client/FocusedRenderingClient/FocusedRenderingClientApp.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClientApp.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClientApp.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClientApp.dia",
+    "index-unit-output-path" : "/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClientApp.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClientApp.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClientApp.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClientApp.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FocusedRenderingClientApp~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Client/FocusedRenderingClient/FrameRenderer.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FrameRenderer.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FrameRenderer.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FrameRenderer.dia",
+    "index-unit-output-path" : "/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FrameRenderer.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FrameRenderer.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FrameRenderer.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FrameRenderer.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/FrameRenderer~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Client/FocusedRenderingClient/HeadPoseTracker.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/HeadPoseTracker.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/HeadPoseTracker.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/HeadPoseTracker.dia",
+    "index-unit-output-path" : "/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/HeadPoseTracker.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/HeadPoseTracker.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/HeadPoseTracker.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/HeadPoseTracker.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/HeadPoseTracker~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Client/FocusedRenderingClient/ImmersiveScreen.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/ImmersiveScreen.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/ImmersiveScreen.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/ImmersiveScreen.dia",
+    "index-unit-output-path" : "/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/ImmersiveScreen.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/ImmersiveScreen.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/ImmersiveScreen.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/ImmersiveScreen.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/ImmersiveScreen~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Client/FocusedRenderingClient/StreamClient.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamClient.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamClient.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamClient.dia",
+    "index-unit-output-path" : "/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamClient.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamClient.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamClient.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamClient.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamClient~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Client/FocusedRenderingClient/StreamSession.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamSession.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamSession.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamSession.dia",
+    "index-unit-output-path" : "/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamSession.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamSession.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamSession.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamSession.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/StreamSession~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Client/FocusedRenderingClient/VideoDecoder.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/VideoDecoder.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/VideoDecoder.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/VideoDecoder.dia",
+    "index-unit-output-path" : "/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/VideoDecoder.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/VideoDecoder.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/VideoDecoder.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/VideoDecoder.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/Client/build/FocusedRenderingClient.build/Debug-xros/FocusedRenderingClient.build/Objects-normal/arm64/VideoDecoder~partial.swiftmodule"
+  }
+}

@@ -14,7 +14,7 @@ public enum MediaMessage: Sendable, Equatable {
     /// them — the decoder cannot build a format description without them.
     case parameterSets([Data])
 
-    /// The rate map needed to undo the foveation.
+    /// How to rebuild the rate map needed to undo the foveation.
     ///
     /// Carries a generation number so frames can reference it without repeating
     /// it: the map only changes when the gaze moves far enough to rebuild it,
@@ -37,28 +37,45 @@ public enum MediaMessage: Sendable, Equatable {
     }
 }
 
+/// Everything the receiver needs to rebuild the rate map the host rendered with.
+///
+/// The parameters travel rather than Metal's serialized rate map, which is
+/// specific to the GPU that produced it and would not be safe to replay on a
+/// different device. Both ends run the same deterministic construction from the
+/// same numbers, so the inverse still cannot drift from the forward mapping —
+/// and it costs a handful of bytes instead of a kilobyte per rebuild.
 public struct RateMapDescription: Sendable, Equatable {
     public var generation: UInt32
     public var screenWidth: UInt16
     public var screenHeight: UInt16
+    /// Size of the encoded image, which the receiver renders back out to the
+    /// screen size.
     public var physicalWidth: UInt16
     public var physicalHeight: UInt16
-    /// Metal's own serialized rate map, replayed verbatim on the far side so the
-    /// inverse cannot drift from the forward mapping.
-    public var parameterData: Data
+    /// Fraction of each axis held at full quality, centred on the gaze.
+    public var foveaRadius: Float
+    /// Rate at the far edge, where 1 is full resolution.
+    public var peripheralQuality: Float
+    /// Where the fovea sits, in 0...1 across the image.
+    public var gazeX: Float
+    public var gazeY: Float
 
     public init(
         generation: UInt32,
         screenWidth: UInt16, screenHeight: UInt16,
         physicalWidth: UInt16, physicalHeight: UInt16,
-        parameterData: Data
+        foveaRadius: Float, peripheralQuality: Float,
+        gazeX: Float, gazeY: Float
     ) {
         self.generation = generation
         self.screenWidth = screenWidth
         self.screenHeight = screenHeight
         self.physicalWidth = physicalWidth
         self.physicalHeight = physicalHeight
-        self.parameterData = parameterData
+        self.foveaRadius = foveaRadius
+        self.peripheralQuality = peripheralQuality
+        self.gazeX = gazeX
+        self.gazeY = gazeY
     }
 }
 
@@ -120,7 +137,10 @@ public enum MediaCodec {
             writer.write(description.screenHeight)
             writer.write(description.physicalWidth)
             writer.write(description.physicalHeight)
-            writer.writeBlob(description.parameterData)
+            writer.write(description.foveaRadius)
+            writer.write(description.peripheralQuality)
+            writer.write(description.gazeX)
+            writer.write(description.gazeY)
 
         case .frame(let header, let payload):
             writer.write(header.index)
@@ -158,7 +178,10 @@ public enum MediaCodec {
                 screenHeight: try reader.read(UInt16.self),
                 physicalWidth: try reader.read(UInt16.self),
                 physicalHeight: try reader.read(UInt16.self),
-                parameterData: try reader.readBlob()
+                foveaRadius: try reader.readFloat(),
+                peripheralQuality: try reader.readFloat(),
+                gazeX: try reader.readFloat(),
+                gazeY: try reader.readFloat()
             ))
 
         case 3:

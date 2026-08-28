@@ -21,7 +21,8 @@ final class MediaProtocolTests: XCTestCase {
             generation: 7,
             screenWidth: 3660, screenHeight: 3200,
             physicalWidth: 2480, physicalHeight: 2160,
-            parameterData: Data((0..<512).map { UInt8($0 % 251) })
+            foveaRadius: 0.12, peripheralQuality: 0.3,
+            gazeX: 0.375, gazeY: 0.625
         )
         XCTAssertEqual(try roundTrip(.rateMap(description)), .rateMap(description))
     }

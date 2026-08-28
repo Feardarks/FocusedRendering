@@ -1,0 +1,236 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000000002F10C19FB4569644 /* FoveatedStreamingProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = 000000006D6410C76D97A8D2 /* FoveatedStreamingProtocol */; };
+		00000000695A45A62657814E /* FoveationBenchmark in Frameworks */ = {isa = PBXBuildFile; productRef = 000000003D2629B00F840204 /* FoveationBenchmark */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		000000000132C545F5AD803D /* FocusedRenderingClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FocusedRenderingClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		00000000291C606B07553E9D /* FocusedRenderingClient */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (); path = FocusedRenderingClient; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000000007440FB5169CD084B = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000002F10C19FB4569644,
+				00000000695A45A62657814E,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		00000000290874F02AB5E91F = {
+			isa = PBXGroup;
+			children = (
+				00000000291C606B07553E9D,
+				0000000028143A066E548FF5,
+			);
+			sourceTree = "<group>";
+		};
+		0000000028143A066E548FF5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000132C545F5AD803D,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0000000019FF80B9A8C1F143 /* FocusedRenderingClient */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000002CA995AD8705E704;
+			buildPhases = (
+				0000000062C5807EF8CB31E7,
+				000000007440FB5169CD084B,
+				000000006D0F5EC483F9B3EA,
+			);
+			buildRules = ();
+			dependencies = ();
+			fileSystemSynchronizedGroups = (
+				00000000291C606B07553E9D,
+			);
+			name = FocusedRenderingClient;
+			packageProductDependencies = (
+				000000006D6410C76D97A8D2,
+				000000003D2629B00F840204,
+			);
+			productName = FocusedRenderingClient;
+			productReference = 000000000132C545F5AD803D;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		00000000087A41382225DE94 = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+			};
+			buildConfigurationList = 000000001E7BE448AAC6A8D8;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base);
+			mainGroup = 00000000290874F02AB5E91F;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				000000006F2D5B9C15569E9D,
+			);
+			productRefGroup = 0000000028143A066E548FF5;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0000000019FF80B9A8C1F143,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000000006D0F5EC483F9B3EA = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0000000062C5807EF8CB31E7 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		000000007E92C8FEA6A2519B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = xros;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
+			};
+			name = Debug;
+		};
+		000000005A2747B5A52BA84A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				SDKROOT = xros;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				COPY_PHASE_STRIP = NO;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0000000026E1FE4CA0997B46 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Focused Rendering";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.emirhan.FocusedRendering.client;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Debug;
+		};
+		000000003E9E996C15B487D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Focused Rendering";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.emirhan.FocusedRendering.client;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000000001E7BE448AAC6A8D8 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000007E92C8FEA6A2519B,
+				000000005A2747B5A52BA84A,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000002CA995AD8705E704 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0000000026E1FE4CA0997B46,
+				000000003E9E996C15B487D7,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		000000006F2D5B9C15569E9D /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		000000006D6410C76D97A8D2 /* FoveatedStreamingProtocol */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FoveatedStreamingProtocol;
+		};
+		000000003D2629B00F840204 /* FoveationBenchmark */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FoveationBenchmark;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 00000000087A41382225DE94;
+}

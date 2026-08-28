@@ -154,7 +154,8 @@ final class StreamingLoopTests: XCTestCase {
         XCTAssertEqual(streamer.statistics.focusUpdatesReceived, 1)
 
         let latest = try XCTUnwrap(headset.rateMaps.last)
-        XCTAssertFalse(latest.parameterData.isEmpty, "a rate map without parameters cannot be inverted")
+        XCTAssertGreaterThan(latest.foveaRadius, 0, "a rate map without a fovea cannot be inverted")
+        XCTAssertGreaterThan(latest.physicalWidth, 0)
         XCTAssertTrue(headset.wait { $0.frames.contains { $0.0.rateMapGeneration == latest.generation } },
                       "frames should start referencing the new map")
     }

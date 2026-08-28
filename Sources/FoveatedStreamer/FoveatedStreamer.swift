@@ -299,22 +299,18 @@ public final class FoveatedStreamer: @unchecked Sendable {
         rateMapFocus = focus
         rateMapGeneration += 1
 
-        // The client cannot invert a map it does not have, so it travels ahead
-        // of the first frame that references it.
-        let requirements = map.parameterDataSizeAndAlign
-        var parameterData = Data(count: requirements.size)
-        if let buffer = device.makeBuffer(length: requirements.size, options: .storageModeShared) {
-            map.copyParameterData(buffer: buffer, offset: 0)
-            parameterData = Data(bytes: buffer.contents(), count: requirements.size)
-        }
-
+        // The client cannot invert a map it cannot rebuild, so the parameters
+        // travel ahead of the first frame that references them.
         link.send(.rateMap(RateMapDescription(
             generation: rateMapGeneration,
             screenWidth: UInt16(configuration.width),
             screenHeight: UInt16(configuration.height),
             physicalWidth: UInt16(physical.width),
             physicalHeight: UInt16(physical.height),
-            parameterData: parameterData
+            foveaRadius: configuration.profile.foveaRadius,
+            peripheralQuality: configuration.profile.peripheralQuality,
+            gazeX: focus.x,
+            gazeY: focus.y
         )))
 
         return map

@@ -1,0 +1,99 @@
+{
+  "" : {
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/FoveatedStreamingProtocol-primary.dia",
+    "emit-module-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/FoveatedStreamingProtocol-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/FoveatedStreamingProtocol-primary-emit-module.dia",
+    "pch" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/FoveatedStreamingProtocol-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/FoveatedStreamingProtocol-primary.swiftdeps"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/ByteCoding.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/ByteCoding.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/ByteCoding.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/ByteCoding.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/ByteCoding.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/ByteCoding.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/ByteCoding.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/ByteCoding.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/ByteCoding~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/Codec.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Codec.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Codec.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Codec.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Codec.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Codec.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Codec.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Codec.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Codec~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/Framing.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Framing.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Framing.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Framing.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Framing.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Framing.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Framing.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Framing.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Framing~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/MediaProtocol.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/MediaProtocol.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/MediaProtocol.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/MediaProtocol.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/MediaProtocol.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/MediaProtocol.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/MediaProtocol.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/MediaProtocol.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/MediaProtocol~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/Messages.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Messages.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Messages.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Messages.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Messages.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Messages.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Messages.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Messages.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Messages~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/Pairing.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Pairing.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Pairing.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Pairing.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Pairing.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Pairing.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Pairing.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Pairing.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/Pairing~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/PairingCredentials.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/PairingCredentials.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/PairingCredentials.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/PairingCredentials.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/PairingCredentials.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/PairingCredentials.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/PairingCredentials.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/PairingCredentials.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/PairingCredentials~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/SecureTransport.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SecureTransport.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SecureTransport.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SecureTransport.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SecureTransport.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SecureTransport.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SecureTransport.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SecureTransport.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SecureTransport~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveatedStreamingProtocol/SessionStateMachine.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SessionStateMachine.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SessionStateMachine.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SessionStateMachine.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SessionStateMachine.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SessionStateMachine.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SessionStateMachine.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SessionStateMachine.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveatedStreamingProtocol-t.build/Objects-normal/arm64/SessionStateMachine~partial.swiftmodule"
+  }
+}

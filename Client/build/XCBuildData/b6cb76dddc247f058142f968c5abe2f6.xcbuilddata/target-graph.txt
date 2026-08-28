@@ -1,0 +1,10 @@
+Target dependency graph (5 targets)
+Target 'FocusedRenderingClient' in project 'FocusedRenderingClient'
+➜ Explicit dependency on target 'FoveatedStreamingProtocol-product' in project 'FocusedRendering'
+➜ Explicit dependency on target 'FoveationBenchmark-product' in project 'FocusedRendering'
+Target 'FoveationBenchmark-product' in project 'FocusedRendering'
+➜ Explicit dependency on target 'FoveationBenchmark' in project 'FocusedRendering'
+Target 'FoveationBenchmark' in project 'FocusedRendering' (no dependencies)
+Target 'FoveatedStreamingProtocol-product' in project 'FocusedRendering'
+➜ Explicit dependency on target 'FoveatedStreamingProtocol' in project 'FocusedRendering'
+Target 'FoveatedStreamingProtocol' in project 'FocusedRendering' (no dependencies)

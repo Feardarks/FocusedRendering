@@ -1,0 +1,4 @@
+module FoveationBenchmark {
+header "FoveationBenchmark-Swift.h"
+export *
+}

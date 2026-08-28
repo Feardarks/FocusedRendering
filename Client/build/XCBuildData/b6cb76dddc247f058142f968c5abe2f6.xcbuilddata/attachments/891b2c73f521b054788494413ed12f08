@@ -1,0 +1,4 @@
+module FoveatedStreamingProtocol {
+header "FoveatedStreamingProtocol-Swift.h"
+export *
+}

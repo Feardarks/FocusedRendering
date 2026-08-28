@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Focused Rendering connects to your Mac on this network to receive the video stream.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_apple-foveated-streaming._tcp</string>
+	</array>
+	<key>NSWorldSensingUsageDescription</key>
+	<string>Head position is used to place the fovea while the gaze entitlement is pending.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationPreferredDefaultSceneSessionRole</key>
+		<string>UIWindowSceneSessionRoleApplication</string>
+		<key>UISceneConfigurations</key>
+		<dict/>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,59 @@
+{
+  "" : {
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationBenchmark-primary.dia",
+    "emit-module-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationBenchmark-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationBenchmark-primary-emit-module.dia",
+    "pch" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationBenchmark-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationBenchmark-primary.swiftdeps"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveationBenchmark/Benchmark.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/Benchmark.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/Benchmark.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/Benchmark.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/Benchmark.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/Benchmark.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/Benchmark.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/Benchmark.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/Benchmark~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveationBenchmark/FoveationProfile.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationProfile.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationProfile.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationProfile.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationProfile.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationProfile.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationProfile.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationProfile.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/FoveationProfile~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveationBenchmark/HeavyScene.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/HeavyScene.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/HeavyScene.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/HeavyScene.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/HeavyScene.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/HeavyScene.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/HeavyScene.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/HeavyScene.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/HeavyScene~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveationBenchmark/RateMapFactory.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/RateMapFactory.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/RateMapFactory.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/RateMapFactory.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/RateMapFactory.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/RateMapFactory.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/RateMapFactory.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/RateMapFactory.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/RateMapFactory~partial.swiftmodule"
+  },
+  "/Users/emirhansanli/FocusedRendering/Sources/FoveationBenchmark/UnwarpShader.swift" : {
+    "const-values" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/UnwarpShader.swiftconstvalues",
+    "dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/UnwarpShader.d",
+    "diagnostics" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/UnwarpShader.dia",
+    "index-unit-output-path" : "/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/UnwarpShader.o",
+    "llvm-bc" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/UnwarpShader.bc",
+    "object" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/UnwarpShader.o",
+    "swift-dependencies" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/UnwarpShader.swiftdeps",
+    "swiftmodule" : "/Users/emirhansanli/FocusedRendering/build/FocusedRendering.build/Debug-xros/FoveationBenchmark-t.build/Objects-normal/arm64/UnwarpShader~partial.swiftmodule"
+  }
+}

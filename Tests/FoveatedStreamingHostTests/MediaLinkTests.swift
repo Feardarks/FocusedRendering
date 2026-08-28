@@ -123,7 +123,8 @@ final class MediaLinkTests: XCTestCase {
         let rateMap = MediaMessage.rateMap(RateMapDescription(
             generation: 1, screenWidth: 3660, screenHeight: 3200,
             physicalWidth: 2480, physicalHeight: 2160,
-            parameterData: Data(repeating: 0xAB, count: 1024)
+            foveaRadius: 0.12, peripheralQuality: 0.3,
+            gazeX: 0.5, gazeY: 0.5
         ))
         link.send(parameterSets)
         link.send(rateMap)

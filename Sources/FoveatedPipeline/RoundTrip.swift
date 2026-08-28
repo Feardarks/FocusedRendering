@@ -127,7 +127,7 @@ public struct RoundTrip {
         encoder.setFragmentBuffer(parameterBuffer, offset: 0, index: 0)
         var uniforms = UnwarpShader.Uniforms(
             screenSize: SIMD2(Float(target.width), Float(target.height)),
-            physicalSize: SIMD2(Float(foveated.width), Float(foveated.height))
+            textureSize: SIMD2(Float(foveated.width), Float(foveated.height))
         )
         encoder.setFragmentBytes(&uniforms, length: MemoryLayout<UnwarpShader.Uniforms>.stride, index: 1)
         encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)

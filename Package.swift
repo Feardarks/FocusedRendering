@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "FocusedRendering",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS(.v14), .visionOS(.v2)],
     products: [
         .library(name: "FoveatedStreamingProtocol", targets: ["FoveatedStreamingProtocol"]),
         .library(name: "FoveatedStreamingHost", targets: ["FoveatedStreamingHost"]),
