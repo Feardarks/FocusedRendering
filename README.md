@@ -19,10 +19,10 @@ Apple's published Foveated Streaming documentation.
 ```mermaid
 flowchart LR
   subgraph s1[Without the focus region]
-    A1[Shade every pixel at full rate] --> A2[11.7 Mpx] --> A3[57 ms GPU]
+    A1[Shade every pixel at full rate] --> A2[11.7 Mpx] --> A3[55 ms GPU]
   end
   subgraph s2[With the focus region]
-    B1[Shade at variable rate] --> B2[6.2 Mpx] --> B3[30 ms GPU]
+    B1[Shade at variable rate] --> B2[6.2 Mpx] --> B3[29 ms GPU]
   end
 ```
 
@@ -33,16 +33,38 @@ Real GPU time on an Apple M2 Pro, rendering a fragment-bound raymarched scene at
 
 | Profile | Pixels shaded | GPU time | Saved |
 |---|---|---|---|
-| off (baseline) | 11.7 Mpx | 56.9 ms | — |
-| conservative | 8.9 Mpx | 43.4 ms | 24% |
-| balanced | 7.6 Mpx | 36.6 ms | 36% |
-| aggressive | 6.2 Mpx | 30.0 ms | 47% |
-| extreme | 5.4 Mpx | 26.2 ms | 54% |
+| off (baseline) | 11.7 Mpx | 55.3 ms | — |
+| conservative | 8.9 Mpx | 42.1 ms | 24% |
+| balanced | 7.6 Mpx | 35.4 ms | 36% |
+| aggressive | 6.2 Mpx | 29.0 ms | 48% |
+| extreme | 5.4 Mpx | 25.4 ms | 54% |
 
 The saving holds steady across a 3× sweep of shader cost, so it is driven by
 pixel count rather than by one scene's particulars. This is an upper bound:
 fully fragment-bound work benefits most, while vertex, geometry and draw-call
 cost does not shrink.
+
+## What it costs in quality
+
+`fr-pipeline` renders the same frame at full rate and through the rate map,
+inverts the warp, and compares them.
+
+| Profile | Fovea | Worst 128px tile |
+|---|---|---|
+| conservative | 86.0 dB | 38.9 dB |
+| balanced | 91.4 dB | 35.0 dB |
+| aggressive | 100.4 dB | 35.3 dB |
+| extreme | lossless | 35.2 dB |
+
+The fovea reconstructs essentially exactly, which is what confirms the inverse
+warp is right rather than merely plausible. Worst-case peripheral quality then
+sits around 35 dB and barely moves between profiles, while the GPU saving more
+than doubles across the same range — so the aggressive end of the scale buys a
+lot for very little.
+
+Averages are reported per tile rather than over the whole periphery on purpose:
+most of a frame is background that undersampling leaves untouched, and a
+peripheral mean stays near 49 dB even where detail has been destroyed.
 
 ## How it works
 
@@ -104,10 +126,11 @@ implemented and tested without the entitlement.
 |---|---|---|
 | M0 | Discovery, pairing handshake, session state | **complete** |
 | M1 | Rate-map renderer and GPU measurement | **complete** |
-| M2 | Encode, transport and display, driven by head pose | next |
-| M3 | Driven by the focus region | requires the entitlement |
+| M2 | Inverse warp and quality measurement | **complete** |
+| M3 | Encode, transport and display, driven by head pose | next |
+| M4 | Driven by the focus region | requires the entitlement |
 
-M2 substitutes head pose for gaze, so the full pipeline can be validated before
+M3 substitutes head pose for gaze, so the full pipeline can be validated before
 the entitlement exists.
 
 ## Building
@@ -116,8 +139,9 @@ the entitlement exists.
 swift build
 swift test
 
-fr-bench                                    # reproduce the measurements
-fr-host --bundle-id <visionOS app bundle ID>  # run the streaming endpoint
+fr-bench                                      # GPU time by profile
+fr-pipeline --out ./frames                    # quality, with PNGs to inspect
+fr-host --bundle-id <visionOS app bundle ID>  # the streaming endpoint
 ```
 
 Requires macOS 14 or later and an Apple silicon Mac. Engineering notes, protocol

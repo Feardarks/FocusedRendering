@@ -1,23 +1,32 @@
 import Metal
 
-/// A deliberately fragment-bound scene.
+/// A deliberately fragment-bound scene carrying high-frequency detail.
 ///
 /// Foveated rendering only pays for itself where per-pixel work dominates, so
 /// the benchmark uses a raymarched signed-distance scene: almost all of its cost
 /// is in the fragment shader and scales with the pixels actually rasterized.
 /// `marchSteps` is the cost dial.
 ///
+/// Surfaces carry a fine procedural pattern on purpose. A scene of smooth
+/// gradients survives undersampling nearly intact, which flatters the
+/// reconstruction and would report a quality figure no real content could
+/// match.
+///
 /// The march exits early when it hits a surface, as a real renderer would. That
 /// keeps divergence in the measurement rather than making saved time a trivial
 /// restatement of saved pixels.
-enum HeavyScene {
+public enum HeavyScene {
 
-    struct Uniforms {
-        var time: Float
-        var marchSteps: UInt32
+    public struct Uniforms {
+        public var time: Float
+        public var marchSteps: UInt32
+        public init(time: Float, marchSteps: UInt32) {
+            self.time = time
+            self.marchSteps = marchSteps
+        }
     }
 
-    static let source = """
+    public static let source = """
     #include <metal_stdlib>
     using namespace metal;
 
@@ -130,7 +139,13 @@ enum HeavyScene {
                 float specular = pow(max(dot(n, halfway), 0.0), 48.0);
                 lit += lightColours[i] * (diffuse * shadow + specular * shadow * 0.6);
             }
-            colour = lit * ao;
+            // High-frequency surface detail. Without it the periphery is all
+            // smooth gradients, which survive undersampling almost intact and
+            // make the reconstruction look far better than real content with
+            // textures and fine geometry ever would.
+            float detail = sin(p.x * 38.0) * sin(p.y * 38.0) * sin(p.z * 38.0);
+            float albedo = mix(0.32, 1.0, 0.5 + 0.5 * detail);
+            colour = lit * ao * albedo;
         }
 
         colour = pow(max(colour, float3(0.0)), float3(1.0 / 2.2));
@@ -138,7 +153,7 @@ enum HeavyScene {
     }
     """
 
-    static func makePipeline(device: any MTLDevice) throws -> any MTLRenderPipelineState {
+    public static func makePipeline(device: any MTLDevice) throws -> any MTLRenderPipelineState {
         let library = try device.makeLibrary(source: source, options: nil)
         let descriptor = MTLRenderPipelineDescriptor()
         descriptor.label = "HeavyScene"

@@ -44,6 +44,25 @@ first run showed `extreme` cutting only 14% of pixels instead of 54%. The
 benchmark looked like it worked and quietly reported a number that would have
 killed the project at its own gate.
 
+### PSNR needs a worst case, not an average
+
+Peripheral PSNR averaged over the whole frame reads about 49 dB for every
+profile, including the most aggressive. That number is meaningless here: most of
+a frame is background that undersampling leaves bit-identical, and it drowns the
+regions that were actually damaged. Per-tile worst case tells the real story —
+around 35 dB, and roughly flat across profiles.
+
+That flatness is the useful finding. Worst-case quality barely changes from
+`balanced` to `extreme` while the GPU saving goes from 36% to 54%, which argues
+for the aggressive end of the range.
+
+### The test scene needed high-frequency detail
+
+The first version of the scene was smooth gradients, which survive
+undersampling nearly intact. It measured GPU time correctly and quality
+misleadingly. Surfaces now carry a fine procedural pattern so the periphery has
+something to lose.
+
 ### Separable, not radial
 
 Metal's rate map is separable — one array for columns, one for rows — so the
