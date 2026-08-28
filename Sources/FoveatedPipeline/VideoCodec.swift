@@ -93,7 +93,10 @@ public final class VideoCodec: @unchecked Sendable {
     /// Encodes one frame for transmission.
     public func encodeForTransport(_ source: CVPixelBuffer) throws -> EncodedAccessUnit {
         let (sample, milliseconds) = try encodePipelined(source)
+        return try accessUnit(from: sample, milliseconds: milliseconds)
+    }
 
+    private func accessUnit(from sample: CMSampleBuffer, milliseconds: Double) throws -> EncodedAccessUnit {
         guard let blockBuffer = CMSampleBufferGetDataBuffer(sample) else {
             throw CodecError.noOutput
         }
@@ -168,6 +171,48 @@ public final class VideoCodec: @unchecked Sendable {
             encodeMilliseconds: encodeMilliseconds,
             decodeMilliseconds: decodeMilliseconds
         ))
+    }
+
+    /// Encodes without blocking the caller.
+    ///
+    /// VideoToolbox delivers the frame on its own thread, so the render loop
+    /// never waits on the media engine and successive frames can be in flight at
+    /// once. With reordering disabled and real-time set, output arrives in
+    /// submission order, so sends stay ordered without extra sequencing.
+    public func encodeAsync(
+        _ source: CVPixelBuffer,
+        completion: @escaping @Sendable (Result<EncodedAccessUnit, any Error>) -> Void
+    ) {
+        let timestamp = CMTime(value: frameIndex, timescale: 90)
+        frameIndex += 1
+        let start = Date()
+
+        let status = VTCompressionSessionEncodeFrame(
+            compression,
+            imageBuffer: source,
+            presentationTimeStamp: timestamp,
+            duration: CMTime(value: 1, timescale: 90),
+            frameProperties: nil,
+            infoFlagsOut: nil
+        ) { [weak self] encodeStatus, _, sampleBuffer in
+            guard let self else { return }
+            guard encodeStatus == noErr, let sampleBuffer else {
+                completion(.failure(CodecError.encodeFailed(encodeStatus)))
+                return
+            }
+            do {
+                let unit = try self.accessUnit(
+                    from: sampleBuffer,
+                    milliseconds: Date().timeIntervalSince(start) * 1000
+                )
+                completion(.success(unit))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        if status != noErr {
+            completion(.failure(CodecError.encodeFailed(status)))
+        }
     }
 
     /// Encodes without draining the session.

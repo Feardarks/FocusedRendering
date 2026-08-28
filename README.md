@@ -160,9 +160,11 @@ The client substitutes head pose for gaze, so the whole pipeline can be
 validated before the entitlement exists. The focus point already travels on the
 media channel; only its source changes.
 
-The host currently manages 17.4 fps at 3660×3200 because rendering and encoding
-do not overlap, and 49 ms of latency before the network. Both are addressed by
-pipelining the loop, which is the next piece of work after the client.
+The host runs at 49.4 fps at 3660×3200 with 40.7 ms median latency, measured
+end to end from render to arrival. Rendering and encoding overlap, so throughput
+is the larger of the two stages rather than their sum; the remaining latency is
+one frame's trip through both and only comes down with a cheaper scene or a
+lower resolution.
 
 ## Building
 

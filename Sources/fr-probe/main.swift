@@ -60,6 +60,8 @@ final class Probe: @unchecked Sendable {
     private var frames = 0
     private var bytes = 0
     private var rateMaps = 0
+    private var keyframes = 0
+    private var parameterSetMessages = 0
     private var latencies: [Double] = []
     private var lastIndex: UInt64?
     private var gaps = 0
@@ -109,6 +111,7 @@ final class Probe: @unchecked Sendable {
             case .frame(let header, let bytesIn):
                 if started == nil { started = Date() }
                 frames += 1
+                if header.isKeyframe { keyframes += 1 }
                 bytes += bytesIn.count
                 // Host and probe share a clock here, so this is a real
                 // render-to-arrival figure rather than an estimate.
@@ -120,6 +123,8 @@ final class Probe: @unchecked Sendable {
                 lastIndex = header.index
             case .rateMap:
                 rateMaps += 1
+            case .parameterSets:
+                parameterSetMessages += 1
             default:
                 break
             }
@@ -146,6 +151,9 @@ final class Probe: @unchecked Sendable {
         print(String(format: "latency       median %.1f ms, p95 %.1f ms  (render to arrival)",
                      percentile(0.5), percentile(0.95)))
         print("rate maps     \(rateMaps)")
+        // More than the opening keyframe means the encoder is being restarted,
+        // which a moving gaze must not cause.
+        print("keyframes     \(keyframes)   parameter sets \(parameterSetMessages)")
         print("index gaps    \(gaps)")
     }
 }

@@ -20,6 +20,13 @@ public struct StreamerConfiguration: Sendable {
     /// and the fovea lags the eye; this is roughly a third of the full-rate
     /// region.
     public var focusRebuildThreshold: Float = 0.04
+    /// How many frames may be rendering or encoding at once.
+    ///
+    /// One means the serial behaviour this replaced. More overlap costs latency
+    /// — a frame waits behind the ones ahead of it — so this stays small: enough
+    /// to keep the GPU and the media engine both busy, not enough to build a
+    /// queue of stale video.
+    public var maxFramesInFlight = 2
 
     public init() {}
 }
@@ -51,10 +58,30 @@ public final class FoveatedStreamer: @unchecked Sendable {
     private var rateMapFocus = SIMD2<Float>(-1, -1)
     private var rateMapGeneration: UInt32 = 0
 
+    /// A render target and the Core Video buffer it aliases.
+    ///
+    /// One per in-flight frame: the encoder reads a buffer after the render that
+    /// filled it has completed, so a single buffer would have the next frame
+    /// overwriting one still being compressed.
+    /// Unchecked because ownership is enforced by the pipeline rather than the
+    /// type: `inFlight` admits at most one frame per slot, and slots are handed
+    /// out round-robin, so exactly one render and then one encode touch a given
+    /// buffer before it is reused.
+    private struct Slot: @unchecked Sendable {
+        let pixelBuffer: CVPixelBuffer
+        let texture: any MTLTexture
+    }
+    private var slots: [Slot] = []
+    private var nextSlot = 0
+    private let inFlight: DispatchSemaphore
+    private let encodeQueue = DispatchQueue(label: "com.focusedrendering.encode")
+
     private var codec: VideoCodec?
     private var codecSize = (width: 0, height: 0)
 
     private var frameIndex: UInt64 = 0
+    private var framesSent = 0
+    private var cachedAllocation: MTLSize?
     private var renderTimes: [Double] = []
     private var encodeTimes: [Double] = []
     private var frameSizes: [Int] = []
@@ -67,6 +94,7 @@ public final class FoveatedStreamer: @unchecked Sendable {
     public init(configuration: StreamerConfiguration, link: MediaLink) throws {
         guard let device = MTLCreateSystemDefaultDevice() else { throw BenchmarkError.noDevice }
         self.configuration = configuration
+        self.inFlight = DispatchSemaphore(value: max(1, configuration.maxFramesInFlight))
         self.device = device
         self.renderer = try RoundTrip(device: device)
         self.bridge = try PixelBufferBridge(device: device)
@@ -104,7 +132,7 @@ public final class FoveatedStreamer: @unchecked Sendable {
             values.isEmpty ? 0 : values.reduce(0, +) / Double(values.count)
         }
         return StreamerStatistics(
-            framesSent: Int(frameIndex),
+            framesSent: framesSent,
             focusUpdatesReceived: focusUpdates,
             rateMapGenerations: Int(rateMapGeneration),
             meanRenderMilliseconds: mean(renderTimes),
@@ -144,11 +172,19 @@ public final class FoveatedStreamer: @unchecked Sendable {
         lock.unlock()
 
         let map = try rateMapIfNeeded(for: currentFocus)
-        let physical = map.physicalSize(layer: 0)
-        let codec = try codecIfNeeded(width: physical.width, height: physical.height)
+        // Everything is sized against the largest map any gaze can produce, so
+        // moving the eye never resizes a target or restarts the encoder.
+        let allocation = try allocationSize()
+        let codec = try codecIfNeeded(width: allocation.width, height: allocation.height)
+        try slotsIfNeeded(width: codec.width, height: codec.height)
 
-        let source = try bridge.makePixelBuffer(width: codec.width, height: codec.height)
-        let texture = try bridge.makeTexture(for: source)
+        // Blocks only when the pipeline is already full, which is the intended
+        // backpressure: without it the loop would render frames faster than the
+        // encoder drains them and latency would grow without bound.
+        inFlight.wait()
+
+        let slot = slots[nextSlot]
+        nextSlot = (nextSlot + 1) % slots.count
 
         var renderConfiguration = RoundTripConfiguration()
         renderConfiguration.width = configuration.width
@@ -157,44 +193,91 @@ public final class FoveatedStreamer: @unchecked Sendable {
         renderConfiguration.gaze = currentFocus
         renderConfiguration.time = Float(frameIndex) * 0.011
 
+        let index = frameIndex
+        frameIndex += 1
+        let generation = rateMapGeneration
         // Stamped before rendering, so the figure the client computes covers
         // render and encode as well as transport. Stamping after encode would
         // report the network alone and flatter the pipeline.
         let stamp = DispatchTime.now().uptimeNanoseconds
         let renderStart = Date()
-        try renderer.renderScene(into: texture, rateMap: map, configuration: renderConfiguration)
-        let renderMilliseconds = Date().timeIntervalSince(renderStart) * 1000
 
-        let unit = try codec.encodeForTransport(source)
+        try renderer.renderSceneAsync(
+            into: slot.texture, rateMap: map, configuration: renderConfiguration
+        ) { [weak self] in
+            guard let self else { return }
+            let renderMilliseconds = Date().timeIntervalSince(renderStart) * 1000
 
-        // Parameter sets must reach the decoder before the frame that needs
-        // them, so they go out first on the same ordered connection.
-        if let sets = unit.parameterSets, !sets.isEmpty {
-            link.send(.parameterSets(sets))
+            self.encodeQueue.async {
+                codec.encodeAsync(slot.pixelBuffer) { result in
+                    defer { self.inFlight.signal() }
+                    switch result {
+                    case .failure(let error):
+                        self.onLog?("frame \(index) dropped: \(error)")
+                    case .success(let unit):
+                        // Parameter sets must reach the decoder before the frame
+                        // that needs them, on the same ordered connection.
+                        if let sets = unit.parameterSets, !sets.isEmpty {
+                            self.link.send(.parameterSets(sets))
+                        }
+                        self.link.send(.frame(
+                            FrameHeader(
+                                index: index,
+                                timestampNanoseconds: stamp,
+                                rateMapGeneration: generation,
+                                isKeyframe: unit.isKeyframe
+                            ),
+                            payload: unit.data
+                        ))
+                        self.record(
+                            render: renderMilliseconds,
+                            encode: unit.encodeMilliseconds,
+                            bytes: unit.data.count
+                        )
+                    }
+                }
+            }
         }
+    }
 
-        link.send(.frame(
-            FrameHeader(
-                index: frameIndex,
-                timestampNanoseconds: stamp,
-                rateMapGeneration: rateMapGeneration,
-                isKeyframe: unit.isKeyframe
-            ),
-            payload: unit.data
-        ))
-
+    private func record(render: Double, encode: Double, bytes: Int) {
         lock.lock()
-        frameIndex += 1
-        renderTimes.append(renderMilliseconds)
-        encodeTimes.append(unit.encodeMilliseconds)
-        frameSizes.append(unit.data.count)
-        // Keep the windows bounded; these are running averages, not a log.
+        defer { lock.unlock() }
+        framesSent += 1
+        renderTimes.append(render)
+        encodeTimes.append(encode)
+        frameSizes.append(bytes)
+        // Running averages, not a log.
         if renderTimes.count > 240 { renderTimes.removeFirst(120) }
         if encodeTimes.count > 240 { encodeTimes.removeFirst(120) }
         if frameSizes.count > 240 { frameSizes.removeFirst(120) }
-        lock.unlock()
+    }
 
-        bridge.flush()
+    private func allocationSize() throws -> MTLSize {
+        if let cached = cachedAllocation { return cached }
+        let size = try RateMapFactory.safePhysicalSize(
+            device: device,
+            screenWidth: configuration.width,
+            screenHeight: configuration.height,
+            profile: configuration.profile
+        )
+        cachedAllocation = size
+        return size
+    }
+
+    private func slotsIfNeeded(width: Int, height: Int) throws {
+        guard slots.count != max(1, configuration.maxFramesInFlight)
+                || slots.first?.texture.width != width
+                || slots.first?.texture.height != height
+        else { return }
+
+        var built: [Slot] = []
+        for _ in 0..<max(1, configuration.maxFramesInFlight) {
+            let pixelBuffer = try bridge.makePixelBuffer(width: width, height: height)
+            built.append(Slot(pixelBuffer: pixelBuffer, texture: try bridge.makeTexture(for: pixelBuffer)))
+        }
+        slots = built
+        nextSlot = 0
     }
 
     private func rateMapIfNeeded(for focus: SIMD2<Float>) throws -> any MTLRasterizationRateMap {

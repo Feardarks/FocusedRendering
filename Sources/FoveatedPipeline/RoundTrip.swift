@@ -149,6 +149,23 @@ public struct RoundTrip {
         commandBuffer.waitUntilCompleted()
     }
 
+    /// Submits the scene and returns without waiting for the GPU.
+    ///
+    /// The completion handler is what lets the next frame start rendering while
+    /// this one is still being encoded; blocking here is what pins throughput to
+    /// render plus encode instead of the larger of the two.
+    public func renderSceneAsync(
+        into target: any MTLTexture,
+        rateMap: (any MTLRasterizationRateMap)?,
+        configuration: RoundTripConfiguration,
+        completion: @escaping @Sendable () -> Void
+    ) throws {
+        guard let commandBuffer = queue.makeCommandBuffer() else { throw BenchmarkError.encodingFailed }
+        try renderScene(into: target, rateMap: rateMap, configuration: configuration, commandBuffer: commandBuffer)
+        commandBuffer.addCompletedHandler { _ in completion() }
+        commandBuffer.commit()
+    }
+
     /// Inverts the warp on an arbitrary texture and reads the result back.
     public func unwarpToImage(
         _ foveated: any MTLTexture,

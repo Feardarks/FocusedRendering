@@ -69,25 +69,52 @@ relative to its resolution. Content with more motion would saturate a link
 sooner, which moves the realistic operating point toward the constrained regime
 where foveation wins by more.
 
-### The render loop is serial, and that is the throughput ceiling
+### Overlapping render and encode, and what it did not fix
 
-At 3660×3200 on the `aggressive` profile the host manages 17.4 fps, not 90. The
-loop renders, waits for the encoder, sends, and only then starts the next frame:
-21 ms of render plus 31 ms of encode is 52 ms, which is exactly the measured
-rate. Nothing here is mysterious — the stages simply do not overlap.
+The loop used to render, wait for the encoder, send, and only then start the
+next frame: 21 ms plus 31 ms is 52 ms, which was exactly the 17.4 fps measured.
+Rendering now submits without waiting and the encoder delivers on its own
+thread, with a semaphore admitting two frames at a time. Throughput is the
+larger of the two stages instead of their sum:
 
-Measured host-side latency is **49 ms median, 69 ms p95, over loopback** — before
-a single byte touches Wi-Fi. Gaze-driven foveation wants total motion-to-photon
-under roughly 50-70 ms, so the pipeline is already at that ceiling with no
-network in it. Overlapping render with encode is not an optimization to get to
-later; it is what makes the approach viable at all.
+|  | before | after |
+|---|---|---|
+| throughput | 17.4 fps | 49.4 fps |
+| latency, median | 49.2 ms | 40.7 ms |
+| latency, p95 | 69.0 ms | 42.1 ms |
 
-A first guess that the per-frame `VTCompressionSessionCompleteFrames` was
-serializing the encoder turned out to be wrong: removing it changed nothing,
-because the loop waits for the encoded frame regardless. The pipelined encode
-path was kept anyway — a bounded wait and no forced flush is the right shape for
-a stream — but the throughput fix is double-buffering the render targets and
-sending from the encoder's callback.
+The p95 is the more interesting column. Throughput nearly tripled, but a single
+frame still passes through render *and* encode, so per-frame latency only fell
+by the slack that had been sitting in the old loop. **Pipelining buys throughput,
+not latency.** Cutting the remaining 40 ms means a cheaper scene, a lower
+resolution or a faster encode — not more overlap.
+
+Backpressure matters as much as the overlap. Without the semaphore the loop
+would render faster than the encoder drains and latency would grow without
+bound; two frames in flight is enough to keep the GPU and the media engine both
+busy without queuing stale video.
+
+### The encode size must not depend on where you look
+
+A compression session is fixed to its dimensions, so a physical size that moves
+with the gaze rebuilds the encoder — and emits a keyframe — every time the eye
+does. It moved by 26%: 2108 to 2656 pixels wide across the screen.
+
+Two fixes, because one was not enough:
+
+1. **Normalize the rate budget.** An off-centre gaze puts more of the axis past
+   the falloff, which lowers the mean rate. The rates are now blended toward
+   full quality by a closed-form factor that lands exactly on the centred mean,
+   so the budget is constant and the spare capacity goes to the periphery. That
+   took the variation from 26% to 3.6%.
+2. **Allocate against a sampled maximum.** Metal rounds each cell independently,
+   so the total still depends on the distribution and no single gaze is reliably
+   largest — the centred one was exceeded by four pixels at the diagonals.
+   Everything is now sized against a sampled maximum plus a granularity step,
+   and the client crops using the physical size in the rate map message.
+
+Verified from the client: 486 frames carried 9 keyframes, which is exactly the
+periodic interval, and one parameter-set message.
 
 ### PSNR needs a worst case, not an average
 
@@ -215,7 +242,7 @@ dns-sd -L "Focused Rendering" _apple-foveated-streaming._tcp local
    part the entitlement gates.
 4. **Pairing store.** `knownFingerprint` always returns nil, so every session
    re-pairs. Persisting it removes the QR step.
-5. **Rate map churn.** A sweeping focus rebuilt the map on 45% of frames, and
+5. **Rate map churn.** A sweeping focus rebuilt the map on 16% of frames, and
    each rebuild resends the full parameter block. The threshold trades fovea lag
    against rebuild cost and has not been tuned against real gaze, only against a
    synthetic circle.

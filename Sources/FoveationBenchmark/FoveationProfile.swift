@@ -41,12 +41,42 @@ public struct FoveationProfile: Sendable, Equatable {
 
     /// Rate arrays for a grid of `cells` cells, with the gaze at `gaze`
     /// (0...1 across the axis).
+    ///
+    /// Normalized so the mean rate — and therefore the physical size Metal
+    /// derives from it — does not depend on where the gaze sits. A size that
+    /// drifted with the eye would rebuild the compression session, and emit a
+    /// keyframe, on every glance.
+    ///
+    /// An off-centre gaze puts more of the axis far away, which lowers the raw
+    /// mean, so the correction blends the rates toward full quality. The budget
+    /// stays fixed and the spare capacity goes to the periphery, which is
+    /// strictly better than leaving it unspent.
     public func rates(cells: Int, gaze: Float) -> [Float] {
         precondition(cells > 0, "a rate axis needs at least one cell")
-        return (0..<cells).map { index in
+        let raw = rawRates(cells: cells, gaze: gaze)
+        let rawMean = raw.reduce(0, +) / Float(cells)
+        let target = centredMean(cells: cells)
+
+        // Blending toward 1 is linear in the blend factor, so the factor that
+        // lands exactly on the target is closed-form — and can never push a rate
+        // above 1, which the API would reject.
+        guard rawMean < target, rawMean < 1 else { return raw }
+        let blend = (target - rawMean) / (1 - rawMean)
+        return raw.map { $0 + blend * (1 - $0) }
+    }
+
+    private func rawRates(cells: Int, gaze: Float) -> [Float] {
+        (0..<cells).map { index in
             let centre = (Float(index) + 0.5) / Float(cells)
             return quality(atOffset: centre - gaze)
         }
+    }
+
+    /// The mean rate for a centred gaze, which is the largest a gaze can produce
+    /// and therefore the budget every other position is held to.
+    private func centredMean(cells: Int) -> Float {
+        let raw = rawRates(cells: cells, gaze: 0.5)
+        return raw.reduce(0, +) / Float(cells)
     }
 
     // Progressively more aggressive presets. `off` is the baseline: no rate map
