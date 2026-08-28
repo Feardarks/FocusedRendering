@@ -14,13 +14,11 @@ developer, built directly against Apple's published protocol documentation.
 
 ```mermaid
 flowchart LR
-  subgraph before["Today"]
-    direction LR
-    V1["Apple Vision Pro"] <--> W["Windows PC<br/>NVIDIA CloudXR"]
+  subgraph s1[Today]
+    V1[Apple Vision Pro] --- W[Windows PC with NVIDIA CloudXR]
   end
-  subgraph after["With Focused Rendering"]
-    direction LR
-    V2["Apple Vision Pro"] <--> M["Mac<br/>Focused Rendering"]
+  subgraph s2[With Focused Rendering]
+    V2[Apple Vision Pro] --- M[Mac running Focused Rendering]
   end
 ```
 
@@ -33,17 +31,16 @@ inverts the foveation warp before display.
 
 ```mermaid
 flowchart LR
-  subgraph avp["Apple Vision Pro"]
-    direction TB
-    EYE["Eye tracking<br/>(system-owned)"] --> PROV["Provider extension<br/>quantizes to a region"]
-    DEC["Decode + inverse warp"] --> DISP["Display"]
+  subgraph s3[Apple Vision Pro]
+    EYE[Eye tracking, system-owned] --> PROV[Provider extension quantizes to a region]
+    DEC[Decode and inverse warp] --> DISP[Display]
   end
-  subgraph mac["User's own Mac — same local network"]
-    direction TB
-    CAP["Capture"] --> WARP["Foveated warp"] --> ENC["Encode"]
+  subgraph s4[The user's own Mac, same local network]
+    CAP[Capture] --> WARP[Foveated warp]
+    WARP --> ENC[Encode]
   end
-  PROV -- "coarse foveation region" --> WARP
-  ENC -- "video" --> DEC
+  PROV -->|coarse foveation region| WARP
+  ENC -->|video| DEC
 ```
 
 Concentrating detail where the user is looking means fewer pixels are encoded
