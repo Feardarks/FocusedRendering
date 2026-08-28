@@ -3,26 +3,52 @@
 Working notes for Focused Rendering. See [README.md](README.md) for what the
 project is.
 
-## What this does not do
+## Why the project pivoted
 
-**It does not reduce the GPU cost of rendering the streamed content.** A
-third-party title renders every pixel at full resolution regardless of where the
-user looks; nothing outside its renderer changes that. Adding capture, warp and
-encode makes the Mac's total GPU load slightly *higher*.
+It began as a screen-capture streamer: capture a game window, foveate the
+encode, send it to the headset. That was the wrong shape, for two reasons.
 
-The payoff is foveated *encoding*: fewer pixels compressed and transmitted, so a
-sharper image at a given bitrate and lower latency. Worth re-reading before
-adding scope — the distinction is easy to lose.
+**Foveated streaming is not foveated rendering.** Compressing an
+already-rendered frame according to gaze saves bandwidth. It does not save the
+GPU any shading work, because every pixel was already shaded. Nothing outside a
+third-party game's renderer can change what that renderer shades.
 
-The original motivation was streaming Death Stranding from an M2 Pro MacBook Pro
-at ultrawide resolutions, where Mac Virtual Display's compression is the limiting
-factor rather than the GPU.
+**Mac Virtual Display already does foveated streaming**, using real gaze, with
+privileged system access, for free. For a flat game window, a userland
+capture-and-encode streamer is strictly worse.
 
-## Kill gate
+So the content source moved: instead of capturing someone else's frames, the Mac
+renders its own, and the focus region drives an `MTLRasterizationRateMap` before
+anything is shaded. That is the one architecture where gaze genuinely reduces
+GPU work on the Mac — and it only works for content the renderer controls.
 
-If M1 is not visibly better than Apple's own Mac Virtual Display, stop. Mac
-Virtual Display has privileged system access and real gaze foveation; a userland
-streamer beating it is not a given.
+M0 survived the pivot untouched; only the source of frames changed.
+
+## Benchmark findings
+
+`fr-bench` on an Apple M2 Pro, 3660×3200, fragment-bound raymarched scene:
+
+- Savings track pixel count almost exactly, and hold within a percentage point
+  across a 3× sweep of shader cost (48/96/160 march steps). The result is
+  therefore a property of the rate map, not of one scene.
+- `aggressive` (middle 12% at full rate, 0.30 at the edges) cuts 47% of GPU time.
+- This is an upper bound. The scene is entirely fragment-bound; vertex,
+  geometry and draw-call cost does not shrink.
+
+### Watch the normalization
+
+The rate arrays are indexed by cell centre in 0...1, so a centred gaze is at most
+**0.5** from either edge. Normalizing the falloff against 1.0 instead of that
+half-extent silently caps every profile around two thirds of the way down: the
+first run showed `extreme` cutting only 14% of pixels instead of 54%. The
+benchmark looked like it worked and quietly reported a number that would have
+killed the project at its own gate.
+
+### Separable, not radial
+
+Metal's rate map is separable — one array for columns, one for rows — so the
+full-quality region is a rounded rectangle, not a disc. Apple's own foveation
+works the same way. There is no way to express a true radial fovea.
 
 ## Protocol
 
@@ -85,8 +111,10 @@ Not approval-gated, and useful before then:
 Sources/
   FoveatedStreamingProtocol/   Messages, framing, session state machine — no I/O
   FoveatedStreamingHost/       Bonjour + TCP transport, QR rendering
-  fr-host/                     CLI
-Tests/                         Conformance, state machine, TCP loopback
+  FoveationBenchmark/          Rate map construction, heavy scene, GPU timing
+  fr-host/                     Streaming endpoint CLI
+  fr-bench/                    Measurement CLI
+Tests/                         Conformance, state machine, TCP loopback, profiles
 ```
 
 The state machine is a pure function from message to actions, so the whole
@@ -121,6 +149,11 @@ dns-sd -L "Focused Rendering" _apple-foveated-streaming._tcp local
    part the entitlement gates.
 4. **Pairing store.** `knownFingerprint` always returns nil, so every session
    re-pairs. Persisting it removes the QR step.
+5. **Latency of the gaze loop.** The focus region reaches the Mac one round trip
+   late, so the rate map always trails the eye. Post-saccade the fovea lands
+   outside the high-rate region for a frame or two. Whether that is visible, and
+   whether enlarging the full-quality region to cover the landing zone is enough,
+   is the open question M3 has to answer.
 
 ## Sources
 
