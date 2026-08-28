@@ -116,6 +116,28 @@ Two fixes, because one was not enough:
 Verified from the client: 486 frames carried 9 keyframes, which is exactly the
 periodic interval, and one parameter-set message.
 
+### A pre-shared key, not a certificate
+
+The focus region is the most sensitive thing on the wire, and it was crossing
+the network in plaintext. It now runs over TLS.
+
+A pre-shared key rather than a certificate, because the pairing QR code is
+already the moment the wearer authorizes this Mac — so the secret it carries is
+exactly the trust anchor, and a PSK needs no certificate authority, no X.509
+generation and no trust store. macOS has no public API for producing a
+self-signed certificate anyway; the alternative was hand-rolling ASN.1.
+
+The session-management channel stays plain TCP because Apple specifies it that
+way. It carries no gaze data.
+
+Cost measured at 3660×3200: 49.4 to 47.5 fps and 40.7 to 43.1 ms median latency.
+
+One secret per endpoint rather than per client. Binding a distinct key to each
+headset would mean the media listener could not start until the control channel
+had identified the peer, which is not worth the complexity for a single wearer
+on a local network — but it is why a re-pair rotates the seed rather than one
+client's key.
+
 ### PSNR needs a worst case, not an average
 
 Peripheral PSNR averaged over the whole frame reads about 49 dB for every
@@ -231,12 +253,10 @@ dns-sd -L "Focused Rendering" _apple-foveated-streaming._tcp local
 
 ## Open questions
 
-1. **Certificate fingerprint.** `DevelopmentCredentials` returns a placeholder.
-   Pairing completes, but the device will refuse the media stream until this is
-   the SHA-256 digest of the real TLS certificate. Blocks M1.
-2. **Client token semantics.** Apple's endpoint gets the token from CloudXR's
-   `NvStreamManager`. For a custom provider the token is presumably ours to
-   define, since our own extension validates it — unverified.
+1. **Client token semantics.** Apple's endpoint gets the token from CloudXR's
+   `NvStreamManager`. This endpoint puts its own pre-shared key there, on the
+   assumption that a custom provider defines the token its own extension
+   validates — unverified against a real device.
 3. **Media transport.** How the device opens the stream after `MediaStreamIsReady`
    is CloudXR-internal. A custom provider defines its own, which is exactly the
    part the entitlement gates.

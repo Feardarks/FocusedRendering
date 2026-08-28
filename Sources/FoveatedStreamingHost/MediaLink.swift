@@ -25,7 +25,13 @@ public final class MediaLink: @unchecked Sendable {
     /// Delivered on the link's internal queue.
     public var onEvent: (@Sendable (MediaLinkEvent) -> Void)?
 
-    public init() {}
+    private let secret: PairingSecret
+
+    /// - Parameter secret: Shared with the headset by the pairing QR code, and
+    ///   the only thing that lets a peer complete the handshake.
+    public init(secret: PairingSecret) {
+        self.secret = secret
+    }
 
     public var isConnected: Bool {
         queue.sync { connection != nil }
@@ -36,14 +42,11 @@ public final class MediaLink: @unchecked Sendable {
     }
 
     public func start(port: UInt16) throws {
-        let tcp = NWProtocolTCP.Options()
-        tcp.noDelay = true
-        // Video is useless late. Let the stack drop a stalled connection rather
-        // than buffer frames the headset will never show in time.
-        tcp.connectionTimeout = 5
-        let parameters = NWParameters(tls: nil, tcp: tcp)
-        parameters.allowLocalEndpointReuse = true
-        parameters.includePeerToPeer = true
+        // The focus region travels on this channel, so it is encrypted and
+        // mutually authenticated with the scanned secret. The session-management
+        // channel stays plain TCP because Apple specifies it that way, and it
+        // carries no gaze data.
+        let parameters = SecureTransport.parameters(secret: secret)
 
         let listener = try NWListener(
             using: parameters,

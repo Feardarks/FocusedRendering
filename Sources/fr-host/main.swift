@@ -112,9 +112,9 @@ do {
     exit(2)
 }
 
-// A stable seed keeps client tokens valid across restarts. Tied to the provider
+// A stable seed keeps the pairing valid across restarts. Tied to the provider
 // identifier so two providers on one machine don't share pairing material.
-let credentials = DevelopmentCredentials(seed: "focused-rendering::\(arguments.providerIdentifier)")
+let credentials = PairingCredentials(seed: arguments.providerIdentifier)
 
 let configuration = StreamingHostConfiguration(
     port: arguments.port,
@@ -204,7 +204,7 @@ if arguments.stream {
     streamerConfiguration.profile = profile
     streamerConfiguration.bitsPerSecond = arguments.bitsPerSecond
 
-    let link = MediaLink()
+    let link = MediaLink(secret: credentials.secret)
     do {
         let created = try FoveatedStreamer(configuration: streamerConfiguration, link: link)
         created.onLog = { log($0) }
@@ -232,6 +232,7 @@ if arguments.stream {
         mediaLink = link
         streamer = created
         log("streaming enabled: \(profile.name), \(arguments.bitsPerSecond / 1_000_000) Mbps")
+        log("media channel secured with TLS-PSK; pair by scanning the QR code")
     } catch {
         FileHandle.standardError.write(Data("error: could not start streaming: \(error)\n".utf8))
         exit(1)

@@ -85,7 +85,7 @@ final class LoopbackHandshakeTests: XCTestCase {
         )
         let host = StreamingHost(
             configuration: configuration,
-            credentials: DevelopmentCredentials(seed: "test-seed")
+            credentials: PairingCredentials(seed: "test-seed")
         )
 
         let box = EventBox()

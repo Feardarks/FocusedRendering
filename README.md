@@ -88,9 +88,9 @@ real socket with a moving focus point.
 
 | | serial loop | overlapped |
 |---|---|---|
-| throughput | 17.4 fps | **49.4 fps** |
-| latency, median | 49.2 ms | **40.7 ms** |
-| latency, p95 | 69.0 ms | **42.1 ms** |
+| throughput | 17.4 fps | **47.5 fps** |
+| latency, median | 49.2 ms | **43.1 ms** |
+| latency, p95 | 69.0 ms | **45.4 ms** |
 
 Rendering and encoding overlap, so throughput is the larger of the two stages
 rather than their sum. The remaining latency is one frame's trip through both.
@@ -150,6 +150,11 @@ over the user's own local network.
 - **Only a coarse region crosses the link**, quantized to the rate map's 32×32
   cell grid — not raw gaze vectors, and not at a fidelity that would reconstruct
   them.
+- **Encrypted and mutually authenticated.** The media channel, which is what
+  carries the focus region, runs TLS with a pre-shared key established by
+  scanning the endpoint's QR code. A peer that has not scanned it cannot
+  complete the handshake, so no focus data is exchanged with anything the person
+  has not explicitly paired.
 - **Pairing is explicit and mutual.** A session requires a QR code scanned on
   the headset, and the endpoint is reachable only on the local network.
 - **Auditable.** The source is public. Every claim above is verifiable by
@@ -174,9 +179,9 @@ points at the right place only for large movements.
 
 ## Development status
 
-Alpha. Verified by 61 automated tests, including protocol conformance against
-the byte sequences in Apple's documentation, and end-to-end streaming over real
-sockets.
+Alpha. Verified by 62 automated tests, including protocol conformance against
+the byte sequences in Apple's documentation, end-to-end streaming over real
+sockets, and a check that a peer without the pairing secret exchanges nothing.
 
 | Milestone | Scope | State |
 |---|---|---|

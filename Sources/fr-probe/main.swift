@@ -1,4 +1,5 @@
 import Foundation
+import FoveatedStreamingHost
 import FoveatedStreamingProtocol
 import Network
 
@@ -18,6 +19,9 @@ OPTIONS:
   --port <n>       Media port. Default: 48011
   --seconds <n>    How long to run. Default: 10
   --sweep          Send a moving focus point, as a wearer's eyes would.
+  --provider <id>  Derive the pairing secret the way the host does, instead of
+                   scanning a QR code. Default: com.focusedrendering.provider
+  --psk <hex>      Use this pairing secret explicitly, as read from a QR code.
   -h, --help       Show this message.
 """
 
@@ -25,6 +29,8 @@ var host = "127.0.0.1"
 var port: UInt16 = 48011
 var seconds = 10.0
 var sweep = false
+var providerIdentifier = "com.focusedrendering.provider"
+var pskHex: String?
 
 var index = 0
 let argv = Array(CommandLine.arguments.dropFirst())
@@ -44,6 +50,8 @@ while index < argv.count {
     case "--port": port = UInt16(value()) ?? port
     case "--seconds": seconds = Double(value()) ?? seconds
     case "--sweep": sweep = true
+    case "--provider": providerIdentifier = value()
+    case "--psk": pskHex = value()
     default:
         FileHandle.standardError.write(Data("error: unknown option \(flag)\n\n\(usage)\n".utf8))
         exit(2)
@@ -67,13 +75,11 @@ final class Probe: @unchecked Sendable {
     private var gaps = 0
     private var started: Date?
 
-    init(host: String, port: UInt16) {
-        let tcp = NWProtocolTCP.Options()
-        tcp.noDelay = true
+    init(host: String, port: UInt16, secret: PairingSecret) {
         connection = NWConnection(
             host: NWEndpoint.Host(host),
             port: NWEndpoint.Port(rawValue: port)!,
-            using: NWParameters(tls: nil, tcp: tcp)
+            using: SecureTransport.parameters(secret: secret)
         )
     }
 
@@ -158,7 +164,20 @@ final class Probe: @unchecked Sendable {
     }
 }
 
-let probe = Probe(host: host, port: port)
+// In a real session this arrives by scanning the endpoint's QR code; deriving
+// it from the provider identifier is the same secret by the same rule.
+let secret: PairingSecret
+if let pskHex {
+    guard let parsed = PairingSecret(hex: pskHex) else {
+        FileHandle.standardError.write(Data("error: --psk is not valid hex\n".utf8))
+        exit(2)
+    }
+    secret = parsed
+} else {
+    secret = PairingCredentials(seed: providerIdentifier).secret
+}
+
+let probe = Probe(host: host, port: port, secret: secret)
 probe.start()
 print("probing \(host):\(port) for \(Int(seconds)) s\(sweep ? ", sweeping focus" : "")")
 

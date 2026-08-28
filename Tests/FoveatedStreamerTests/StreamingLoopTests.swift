@@ -13,9 +13,10 @@ private final class SimulatedHeadset: @unchecked Sendable {
     private var decoder = FrameDecoder()
     private var messages: [MediaMessage] = []
 
-    init(port: UInt16) {
+    init(port: UInt16, secret: PairingSecret) {
         connection = NWConnection(
-            host: .ipv4(.loopback), port: NWEndpoint.Port(rawValue: port)!, using: .tcp
+            host: .ipv4(.loopback), port: NWEndpoint.Port(rawValue: port)!,
+            using: SecureTransport.parameters(secret: secret)
         )
     }
 
@@ -67,8 +68,10 @@ private final class SimulatedHeadset: @unchecked Sendable {
 
 final class StreamingLoopTests: XCTestCase {
 
+    private let secret = PairingSecret.random()
+
     private func makeStreamer() throws -> (FoveatedStreamer, MediaLink, UInt16) {
-        let link = MediaLink()
+        let link = MediaLink(secret: secret)
         var configuration = StreamerConfiguration()
         // Small and cheap; this test is about the plumbing, not the pixels.
         configuration.width = 1280
@@ -94,7 +97,7 @@ final class StreamingLoopTests: XCTestCase {
         let (streamer, link, port) = try makeStreamer()
         defer { streamer.stop(); link.stop() }
 
-        let headset = SimulatedHeadset(port: port)
+        let headset = SimulatedHeadset(port: port, secret: secret)
         headset.start()
         defer { headset.stop() }
         XCTAssertTrue(headset.wait { _ in link.isConnected }, "never connected")
@@ -133,7 +136,7 @@ final class StreamingLoopTests: XCTestCase {
         let (streamer, link, port) = try makeStreamer()
         defer { streamer.stop(); link.stop() }
 
-        let headset = SimulatedHeadset(port: port)
+        let headset = SimulatedHeadset(port: port, secret: secret)
         headset.start()
         defer { headset.stop() }
         XCTAssertTrue(headset.wait { _ in link.isConnected })
@@ -162,7 +165,7 @@ final class StreamingLoopTests: XCTestCase {
         let (streamer, link, port) = try makeStreamer()
         defer { streamer.stop(); link.stop() }
 
-        let headset = SimulatedHeadset(port: port)
+        let headset = SimulatedHeadset(port: port, secret: secret)
         headset.start()
         defer { headset.stop() }
         XCTAssertTrue(headset.wait { _ in link.isConnected })

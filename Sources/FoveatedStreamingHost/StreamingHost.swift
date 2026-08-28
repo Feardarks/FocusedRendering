@@ -58,7 +58,7 @@ public enum HostEvent: Sendable {
 public final class StreamingHost: @unchecked Sendable {
 
     private let configuration: StreamingHostConfiguration
-    private let credentials: DevelopmentCredentials
+    private let credentials: PairingCredentials
     private let queue = DispatchQueue(label: "com.focusedrendering.host")
 
     private var listener: NWListener?
@@ -69,7 +69,7 @@ public final class StreamingHost: @unchecked Sendable {
     /// Delivered on the host's internal queue.
     public var onEvent: (@Sendable (HostEvent) -> Void)?
 
-    public init(configuration: StreamingHostConfiguration, credentials: DevelopmentCredentials) {
+    public init(configuration: StreamingHostConfiguration, credentials: PairingCredentials) {
         self.configuration = configuration
         self.credentials = credentials
         self.stateMachine = SessionStateMachine(environment: SessionEnvironment(

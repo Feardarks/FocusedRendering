@@ -11,11 +11,11 @@ private final class SimulatedClient: @unchecked Sendable {
     private var decoder = FrameDecoder()
     private var received: [MediaMessage] = []
 
-    init(port: UInt16) {
+    init(port: UInt16, secret: PairingSecret) {
         connection = NWConnection(
             host: .ipv4(.loopback),
             port: NWEndpoint.Port(rawValue: port)!,
-            using: .tcp
+            using: SecureTransport.parameters(secret: secret)
         )
     }
 
@@ -83,8 +83,10 @@ private final class EventBox: @unchecked Sendable {
 
 final class MediaLinkTests: XCTestCase {
 
+    private let secret = PairingSecret.random()
+
     private func startLink() throws -> (MediaLink, UInt16, EventBox) {
-        let link = MediaLink()
+        let link = MediaLink(secret: secret)
         let box = EventBox()
         link.onEvent = { box.append($0) }
         try link.start(port: 0)
@@ -97,8 +99,10 @@ final class MediaLinkTests: XCTestCase {
         throw XCTSkip("the media link did not bind a port")
     }
 
-    private func connectedClient(to port: UInt16, link: MediaLink) throws -> SimulatedClient {
-        let client = SimulatedClient(port: port)
+    private func connectedClient(
+        to port: UInt16, link: MediaLink, secret: PairingSecret? = nil
+    ) throws -> SimulatedClient {
+        let client = SimulatedClient(port: port, secret: secret ?? self.secret)
         client.start()
         let deadline = Date().addingTimeInterval(5)
         while Date() < deadline {
@@ -174,6 +178,28 @@ final class MediaLinkTests: XCTestCase {
         let updates = box.waitForFocus(count: 1)
         XCTAssertEqual(updates.count, 1, "only the focus update should have registered")
         XCTAssertEqual(updates.first?.timestampNanoseconds, 99)
+    }
+
+    /// The scanned secret is what authorizes a peer, so a client without it must
+    /// not reach the point of exchanging any video or focus data.
+    func testAClientWithoutTheSecretCannotConnect() throws {
+        let (link, port, box) = try startLink()
+        defer { link.stop() }
+
+        let impostor = SimulatedClient(port: port, secret: .random())
+        impostor.start()
+        defer { impostor.stop() }
+
+        // Give the handshake longer than a successful one would ever need.
+        let deadline = Date().addingTimeInterval(3)
+        while Date() < deadline {
+            XCTAssertFalse(link.isConnected, "the handshake should never have completed")
+            usleep(50_000)
+        }
+
+        impostor.send(.focus(FocusUpdate(x: 0.5, y: 0.5, timestampNanoseconds: 1)))
+        XCTAssertTrue(box.waitForFocus(count: 1, timeout: 1).isEmpty,
+                      "no focus data may reach the host over an unauthenticated link")
     }
 
     func testDisconnectIsReported() throws {
