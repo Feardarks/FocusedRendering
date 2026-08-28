@@ -10,6 +10,15 @@ public struct RoundTripConfiguration: Sendable {
     /// Fixed so the reference and the foveated render draw the same instant;
     /// otherwise the comparison measures animation, not foveation.
     public var time: Float = 1.25
+    /// Frames encoded before measuring, so the codec reaches steady state.
+    ///
+    /// The first frame of a sequence is always a keyframe and several times the
+    /// size of the ones that follow. Measuring it reports an I-frame cost as if
+    /// it were the stream's, and leaves the bitrate ceiling doing nothing.
+    public var frameCount = 30
+    /// Scene time advanced per frame, so successive frames differ and the
+    /// encoder has real motion to predict.
+    public var timeStep: Float = 0.016
 
     public init() {}
 }
@@ -123,6 +132,36 @@ public struct RoundTrip {
         encoder.setFragmentBytes(&uniforms, length: MemoryLayout<UnwarpShader.Uniforms>.stride, index: 1)
         encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
         encoder.endEncoding()
+    }
+
+    /// Draws the scene into a caller-supplied target and waits for it.
+    ///
+    /// Used when the target is a Core Video buffer the encoder will read, so the
+    /// render lands directly in the memory VideoToolbox picks up.
+    public func renderScene(
+        into target: any MTLTexture,
+        rateMap: (any MTLRasterizationRateMap)?,
+        configuration: RoundTripConfiguration
+    ) throws {
+        guard let commandBuffer = queue.makeCommandBuffer() else { throw BenchmarkError.encodingFailed }
+        try renderScene(into: target, rateMap: rateMap, configuration: configuration, commandBuffer: commandBuffer)
+        commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
+    }
+
+    /// Inverts the warp on an arbitrary texture and reads the result back.
+    public func unwarpToImage(
+        _ foveated: any MTLTexture,
+        rateMap: any MTLRasterizationRateMap,
+        width: Int,
+        height: Int
+    ) throws -> CapturedImage {
+        let restored = try makeTexture(width: width, height: height, readable: true)
+        guard let commandBuffer = queue.makeCommandBuffer() else { throw BenchmarkError.encodingFailed }
+        try unwarp(foveated, rateMap: rateMap, into: restored, commandBuffer: commandBuffer)
+        commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
+        return CapturedImage.read(from: restored)
     }
 
     /// The full-rate render every foveated variant is measured against.

@@ -1,4 +1,5 @@
 import CoreGraphics
+import CoreVideo
 import Foundation
 import ImageIO
 import Metal
@@ -27,6 +28,31 @@ public struct CapturedImage: Sendable {
                 from: MTLRegionMake2D(0, 0, width, height),
                 mipmapLevel: 0
             )
+        }
+        return CapturedImage(width: width, height: height, pixels: pixels)
+    }
+
+    /// Reads a decoded frame back from Core Video.
+    ///
+    /// The decoder is free to pad each row, so the stride is read from the
+    /// buffer rather than assumed from the width.
+    public static func read(from pixelBuffer: CVPixelBuffer) -> CapturedImage {
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
+
+        let width = CVPixelBufferGetWidth(pixelBuffer)
+        let height = CVPixelBufferGetHeight(pixelBuffer)
+        let stride = CVPixelBufferGetBytesPerRow(pixelBuffer)
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+
+        if let base = CVPixelBufferGetBaseAddress(pixelBuffer) {
+            let source = base.assumingMemoryBound(to: UInt8.self)
+            pixels.withUnsafeMutableBytes { destination in
+                let target = destination.baseAddress!.assumingMemoryBound(to: UInt8.self)
+                for row in 0..<height {
+                    memcpy(target + row * width * 4, source + row * stride, width * 4)
+                }
+            }
         }
         return CapturedImage(width: width, height: height, pixels: pixels)
     }

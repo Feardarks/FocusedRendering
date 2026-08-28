@@ -44,6 +44,31 @@ first run showed `extreme` cutting only 14% of pixels instead of 54%. The
 benchmark looked like it worked and quietly reported a number that would have
 killed the project at its own gate.
 
+### Measure the steady state, not the keyframe
+
+Encoding a single frame per path measures an I-frame and leaves the bitrate
+ceiling doing nothing: the first run reported 143 KB/frame, which at 90 fps is
+~105 Mbps against a nominal 50 Mbps cap. `fr-pipeline --bitrate` now encodes a
+30-frame animated sequence and averages everything after the opening keyframe,
+which drops the steady state to 10-12 KB/frame and lets rate control engage.
+
+The reference has to be rendered at the *last* frame's scene time, not the
+sequence's start, or the comparison measures the animation instead of the codec.
+
+### Bandwidth is where foveation pays most
+
+At 50 Mbps this scene never saturates the encoder, so both paths sit near their
+rendering quality and the win is mostly in encode and decode time (29→18 ms and
+9→6 ms). Squeeze the link and the picture changes completely: at 4 Mbps the
+foveated path is 10.7 dB better in the fovea *and* 5.4 dB better in the worst
+peripheral tile, because spreading a small budget across 11.7 Mpx degrades the
+entire frame.
+
+Worth remembering when reading these numbers: this scene is cheap for an encoder
+relative to its resolution. Content with more motion would saturate a link
+sooner, which moves the realistic operating point toward the constrained regime
+where foveation wins by more.
+
 ### PSNR needs a worst case, not an average
 
 Peripheral PSNR averaged over the whole frame reads about 49 dB for every
@@ -131,8 +156,10 @@ Sources/
   FoveatedStreamingProtocol/   Messages, framing, session state machine — no I/O
   FoveatedStreamingHost/       Bonjour + TCP transport, QR rendering
   FoveationBenchmark/          Rate map construction, heavy scene, GPU timing
+  FoveatedPipeline/            Inverse warp, HEVC round trip, image metrics
   fr-host/                     Streaming endpoint CLI
-  fr-bench/                    Measurement CLI
+  fr-bench/                    GPU timing CLI
+  fr-pipeline/                 Quality and codec CLI
 Tests/                         Conformance, state machine, TCP loopback, profiles
 ```
 

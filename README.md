@@ -66,6 +66,30 @@ Averages are reported per tile rather than over the whole periphery on purpose:
 most of a frame is background that undersampling leaves untouched, and a
 peripheral mean stays near 49 dB even where detail has been destroyed.
 
+## Under a bitrate budget
+
+Rendering fewer pixels also means encoding fewer pixels. `fr-pipeline --bitrate`
+puts both paths through real-time HEVC at the same ceiling and compares the
+decoded, unwarped result against a full-rate reference.
+
+At 4 Mbps — a constrained wireless link, which is the case that matters:
+
+| Path | Fovea | Worst tile | Encode | Decode |
+|---|---|---|---|---|
+| full rate | 42.1 dB | 30.2 dB | 28.2 ms | 9.3 ms |
+| aggressive foveation | **52.8 dB** | **35.6 dB** | **17.4 ms** | **6.2 ms** |
+
+Foveation wins everywhere, not just where the eye is pointed. Spreading a small
+bit budget across 11.7 Mpx degrades the whole frame; spending it on 6.2 Mpx
+leaves enough for the fovea to stay at its rendering ceiling, and the periphery
+still comes out ahead.
+
+The gap widens as bandwidth tightens — 10.7 dB in the fovea at 4 Mbps, 12.6 dB
+at 2 Mbps — and closes when bandwidth is plentiful. At 50 Mbps the encoder is
+never the constraint and both paths land near their rendering quality, though
+the foveated path still encodes in 18 ms against 29 and decodes in 6 ms against
+9. That decode figure is spent on the headset, where the headroom is tightest.
+
 ## How it works
 
 ```mermaid
@@ -127,10 +151,11 @@ implemented and tested without the entitlement.
 | M0 | Discovery, pairing handshake, session state | **complete** |
 | M1 | Rate-map renderer and GPU measurement | **complete** |
 | M2 | Inverse warp and quality measurement | **complete** |
-| M3 | Encode, transport and display, driven by head pose | next |
-| M4 | Driven by the focus region | requires the entitlement |
+| M3 | Real-time HEVC through the loop, measured | **complete** |
+| M4 | Transport and on-device display, driven by head pose | next |
+| M5 | Driven by the focus region | requires the entitlement |
 
-M3 substitutes head pose for gaze, so the full pipeline can be validated before
+M4 substitutes head pose for gaze, so the full pipeline can be validated before
 the entitlement exists.
 
 ## Building
@@ -141,6 +166,7 @@ swift test
 
 fr-bench                                      # GPU time by profile
 fr-pipeline --out ./frames                    # quality, with PNGs to inspect
+fr-pipeline --bitrate 4                       # the same, through real-time HEVC
 fr-host --bundle-id <visionOS app bundle ID>  # the streaming endpoint
 ```
 

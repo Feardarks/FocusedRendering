@@ -6,6 +6,7 @@ setvbuf(stdout, nil, _IOLBF, 0)
 
 var configuration = RoundTripConfiguration()
 var outputDirectory: URL?
+var bitsPerSecond: Int?
 var index = 0
 let argv = Array(CommandLine.arguments.dropFirst())
 
@@ -25,6 +26,9 @@ OPTIONS:
   --steps <n>     March steps. Default: 96
   --gaze <x,y>    Fovea centre in 0...1. Default: 0.5,0.5
   --out <dir>     Write reference and unwarped PNGs here.
+  --bitrate <n>   Run the codec comparison instead, at n Mbps.
+                  Encodes each path through real-time HEVC at the same
+                  budget and reports what survives.
   -h, --help      Show this message.
 """
 
@@ -44,6 +48,13 @@ while index < argv.count {
     case "--height": configuration.height = Int(value()) ?? configuration.height
     case "--steps": configuration.marchSteps = Int(value()) ?? configuration.marchSteps
     case "--out": outputDirectory = URL(fileURLWithPath: value())
+    case "--bitrate":
+        let raw = value()
+        guard let megabits = Int(raw), megabits > 0 else {
+            FileHandle.standardError.write(Data("error: --bitrate cannot be \"\(raw)\"\n".utf8))
+            exit(2)
+        }
+        bitsPerSecond = megabits * 1_000_000
     case "--gaze":
         let parts = value().split(separator: ",").compactMap { Float($0) }
         if parts.count == 2 { configuration.gaze = SIMD2(parts[0], parts[1]) }
@@ -61,6 +72,20 @@ func pad(_ text: String, _ width: Int, right: Bool = false) -> String {
 
 func format(_ value: Double) -> String {
     value.isInfinite ? "lossless" : String(format: "%.1f dB", value)
+}
+
+if let bitsPerSecond {
+    do {
+        try CodecCommand.run(
+            configuration: configuration,
+            bitsPerSecond: bitsPerSecond,
+            outputDirectory: outputDirectory
+        )
+        exit(0)
+    } catch {
+        FileHandle.standardError.write(Data("error: \(error)\n".utf8))
+        exit(1)
+    }
 }
 
 do {

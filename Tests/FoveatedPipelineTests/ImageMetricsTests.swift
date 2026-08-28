@@ -66,3 +66,21 @@ final class ImageMetricsTests: XCTestCase {
         XCTAssertFalse(rect.contains(x: 0.5, y: 0.5))
     }
 }
+
+final class VideoCodecTests: XCTestCase {
+
+    /// Video encoders reject odd dimensions, and a rate map's physical size is
+    /// rounded to its own granularity rather than to anything the codec cares
+    /// about — so the codec has to bring them down to even itself.
+    func testOddDimensionsAreRoundedDown() throws {
+        let codec = try VideoCodec(width: 1921, height: 1081, bitsPerSecond: 8_000_000)
+        XCTAssertEqual(codec.width, 1920)
+        XCTAssertEqual(codec.height, 1080)
+    }
+
+    func testEvenDimensionsPassThrough() throws {
+        let codec = try VideoCodec(width: 1280, height: 720, bitsPerSecond: 8_000_000)
+        XCTAssertEqual(codec.width, 1280)
+        XCTAssertEqual(codec.height, 720)
+    }
+}
